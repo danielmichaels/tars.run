@@ -2,6 +2,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/linux,python,visualstudiocode,node,react,vuejs,python,rust,jetbrains,go
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,python,visualstudiocode,node,react,vuejs,python,rust,jetbrains,go
 
+### Custom ###
+# ignore air related stuff
+tmp/*
+
 ### Go ###
 # Binaries for programs and plugins
 *.exe
