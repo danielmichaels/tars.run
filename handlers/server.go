@@ -50,7 +50,9 @@ func (s *apiServer) NewLink() http.HandlerFunc {
 		s.db.Debug().First(&ex)
 		log.Println(&ex)
 
-		err = s.respondWithJSON(w, &response, http.StatusOK)
+		if err = s.respondWithJSON(w, &response, http.StatusOK); err != nil {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 	}
 }
 
