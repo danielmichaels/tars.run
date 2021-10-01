@@ -14,15 +14,6 @@ import (
 	"time"
 )
 
-// Server interface implements a router type. Handles all HTTP requests to the server.
-type Server interface {
-	Router() *mux.Router
-}
-
-func (s apiServer) Router() *mux.Router {
-	return s.router
-}
-
 // respondWithJSON return json formatting and allow for custom response headers
 func (s *apiServer) respondWithJSON(w http.ResponseWriter, i interface{}, status int) error {
 	w.WriteHeader(status)
@@ -99,7 +90,6 @@ func (s *apiServer) resolveHash() http.HandlerFunc {
 		log.Println("hash", hash)
 		err := s.db.Debug().Where("hash = ?", hash).First(&link).Error
 		if err != nil {
-			log.Println("NOT FOUND")
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				domain := fmt.Sprintf("%s/nothing-found", shorty.AppConfig().Server.Domain)
 				http.Redirect(w, r, domain, http.StatusFound)
@@ -109,16 +99,11 @@ func (s *apiServer) resolveHash() http.HandlerFunc {
 				return
 			}
 		}
-		log.Println(link.Hash)
-		// http://localhost:1987/a7GCBojygRk // mudmap.io
-		// http://localhost:1987/Boo9ohcsEsr // danielms
 		var domain string
 		if !strings.HasPrefix(link.OriginalURL, "http://") && !strings.HasPrefix(link.OriginalURL, "https://") {
 			domain = "http://" + link.OriginalURL
-			log.Println("prepending domain", domain)
 		} else {
 			domain = link.OriginalURL
-			log.Println("domain has prefix already", domain)
 		}
 
 		w.Header().Add("Content-Type", "text/plain")
@@ -148,7 +133,7 @@ func (s *apiServer) resolveHash() http.HandlerFunc {
 func (s *apiServer) linkQuery() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := mux.Vars(r)["hash"]
-		log.Println("query", hash)
+		log.Println("query", hash) // debug remove
 		var data []adapters.DataPoints
 		s.db.Debug().Where("link_id = ?", hash).Order("date_accessed desc").Find(&data)
 		fmt.Println(data)
@@ -162,11 +147,11 @@ func (s *apiServer) linkQuery() http.HandlerFunc {
 
 func (s *apiServer) nothingFound() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("nothing found"))
-
+		fmt.Fprint(w, "Nothing Found")
 	}
 }
 
+// getIP returns a users IP address. This is used to populate the DataPoints table.
 func getIP(r *http.Request) (string, error) {
 	//Get IP from the X-REAL-IP header
 	ip := r.Header.Get("X-REAL-IP")
@@ -194,7 +179,7 @@ func getIP(r *http.Request) (string, error) {
 	if netIP != nil {
 		return ip, nil
 	}
-	return "", fmt.Errorf("No valid ip found")
+	return "", fmt.Errorf("no valid ip found")
 }
 
 func NewServer() Server {
@@ -215,4 +200,13 @@ type apiServer struct {
 	WriteTimeout time.Duration
 	IdleTimeout  time.Duration
 	db           *gorm.DB
+}
+
+// Server interface implements a router type. Handles all HTTP requests to the server.
+type Server interface {
+	Router() *mux.Router
+}
+
+func (s apiServer) Router() *mux.Router {
+	return s.router
 }

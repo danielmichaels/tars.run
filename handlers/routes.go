@@ -1,10 +1,13 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // All routes for the server are found here.
 func (s *apiServer) routes() {
 	api := s.router.PathPrefix("/api").Subrouter()
+	api.Use(s.CORSMiddleware)
 	api.Use(s.jsonContentTypeMiddleware)
 
 	// for testing, this should only return a users links in future
@@ -12,7 +15,8 @@ func (s *apiServer) routes() {
 	api.HandleFunc("/links/analytics/all", s.AllDataPoints()).Methods(http.MethodGet)
 
 	// create new links
-	api.HandleFunc("/new", s.NewLink()).Methods(http.MethodPost)
+	//api.HandleFunc("/new", allowOptions()).Methods(http.MethodOptions)
+	api.HandleFunc("/new", s.NewLink()).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/{hash}/query", s.linkQuery()).Methods(http.MethodGet)
 

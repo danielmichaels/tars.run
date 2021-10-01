@@ -7,11 +7,12 @@ import (
 )
 
 type serverConf struct {
-	Port         int           `env:"SERVER_PORT,required"`
-	TimeoutRead  time.Duration `env:"SERVER_TIMEOUT_READ,required"`
-	TimeoutWrite time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
-	TimeoutIdle  time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
-	Domain       string        `env:"DOMAIN,required"` // server's domain
+	Port           int           `env:"SERVER_PORT,required"`
+	TimeoutRead    time.Duration `env:"SERVER_TIMEOUT_READ,required"`
+	TimeoutWrite   time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
+	TimeoutIdle    time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
+	Domain         string        `env:"DOMAIN,required"`          // server's domain
+	AllowedOrigins string        `env:"ALLOWED_ORIGINS,required"` // server's domain
 }
 
 type Conf struct {
