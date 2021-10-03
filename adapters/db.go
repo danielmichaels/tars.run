@@ -16,7 +16,6 @@ func DBConnection() *gorm.DB {
 	if err != nil {
 		log.Fatal("failed to connect to adapters")
 	}
-	//InitialMigrations(database)
 	return db
 }
 
@@ -28,12 +27,12 @@ func InitialMigrations(database string) {
 	log.Println("migrations running...")
 	if err != nil {
 		fmt.Println(err.Error())
-		panic("failed to connect adapters")
+		log.Fatalln("failed to connect adapters")
 	}
 	err = db.AutoMigrate(&Link{}, &DataPoints{})
 	if err != nil {
 		fmt.Println(err.Error())
-		panic("failed to run migrations on adapters")
+		log.Fatalln("failed to run migrations on adapters")
 	}
 	log.Println("finished running migrations!")
 }

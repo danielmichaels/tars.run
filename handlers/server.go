@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
-	"log"
 	"net"
 	"net/http"
 	"shorty"
@@ -19,138 +17,6 @@ func (s *apiServer) respondWithJSON(w http.ResponseWriter, i interface{}, status
 	w.WriteHeader(status)
 	e := ToJSON(i, w)
 	return e
-}
-
-// NewLink accepts a post request of `link` and kicks off the encoding.
-// returns: json object containing shortened link
-func (s *apiServer) NewLink() http.HandlerFunc {
-	type Request struct {
-		Link string `json:"link"`
-	}
-	var request Request
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := FromJSON(&request, r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		link := &request.Link
-		hash := adapters.CreateURL()
-
-		response := adapters.Link{
-			OriginalURL: *link,
-			Hash:        hash,
-		}
-
-		if err := s.db.Debug().Create(&response).Error; err != nil {
-			log.Fatalln("failed to create new short link in database", err)
-		}
-		var ex adapters.DataPoints
-		s.db.Debug().First(&ex)
-		log.Println(&ex)
-
-		if err = s.respondWithJSON(w, &response, http.StatusOK); err != nil {
-			http.Error(w, "internal server error", http.StatusInternalServerError)
-		}
-	}
-}
-
-// AllLinks returns all links - testing and debug only todo
-func (s *apiServer) AllLinks() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var links []adapters.Link
-		s.db.Find(&links)
-		log.Println(links)
-
-		if err := s.respondWithJSON(w, links, http.StatusOK); err != nil {
-			http.Error(w, "error occurred", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// AllDataPoints returns all data points for links - testing and debug only todo
-func (s *apiServer) AllDataPoints() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var data []adapters.DataPoints
-		s.db.Debug().Find(&data)
-		fmt.Println(data)
-
-		if err := s.respondWithJSON(w, data, http.StatusOK); err != nil {
-			http.Error(w, "error occurred", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func (s *apiServer) resolveHash() http.HandlerFunc {
-	var link adapters.Link
-	return func(w http.ResponseWriter, r *http.Request) {
-		hash := mux.Vars(r)["hash"]
-		// todo: its looking up any asset i.e. favicon/css etc - should only lookup the {hash}
-		log.Println("hash", hash)
-		err := s.db.Debug().Where("hash = ?", hash).First(&link).Error
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				domain := fmt.Sprintf("%s/nothing-found", shorty.AppConfig().Server.Domain)
-				http.Redirect(w, r, domain, http.StatusFound)
-				return
-			} else {
-				http.Error(w, "failed to complete search", http.StatusInternalServerError)
-				return
-			}
-		}
-		var domain string
-		if !strings.HasPrefix(link.OriginalURL, "http://") && !strings.HasPrefix(link.OriginalURL, "https://") {
-			domain = "http://" + link.OriginalURL
-		} else {
-			domain = link.OriginalURL
-		}
-
-		w.Header().Add("Content-Type", "text/plain")
-		w.Header().Set("Location", domain)
-
-		// create a dataPoint each time its accessed
-		ip, err := getIP(r)
-		if err != nil {
-			ip = "not found"
-		}
-		fmt.Println(ip)
-		data := &adapters.DataPoints{
-			LinkID:       link.Hash,
-			DateAccessed: time.Now().UTC(),
-			Ip:           ip,
-			UserAgent:    r.UserAgent(),
-			Location:     r.Referer(), // this is wrong, needs an IP lookup
-		}
-		if err := s.db.Debug().Create(&data).Error; err != nil {
-			log.Println("failed to save datapoint", err)
-		}
-
-		http.Redirect(w, r, domain, http.StatusSeeOther)
-	}
-}
-
-func (s *apiServer) linkQuery() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		hash := mux.Vars(r)["hash"]
-		log.Println("query", hash) // debug remove
-		var data []adapters.DataPoints
-		s.db.Debug().Where("link_id = ?", hash).Order("date_accessed desc").Find(&data)
-		fmt.Println(data)
-
-		if err := s.respondWithJSON(w, data, http.StatusOK); err != nil {
-			http.Error(w, "error occurred", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func (s *apiServer) nothingFound() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Nothing Found")
-	}
 }
 
 // getIP returns a users IP address. This is used to populate the DataPoints table.
