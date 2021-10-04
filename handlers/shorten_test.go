@@ -7,25 +7,24 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"shorty/adapters"
 	"testing"
 )
 
 var mockLinks = []adapters.Link{
-	{OriginalURL: "https://test.com", Hash: "12345678", Data: nil},
-	{OriginalURL: "mudmap.io", Hash: "abcdefgh", Data: nil},
+	{OriginalURL: "https://test.com", Hash: "12345678", Data: []adapters.DataPoints{}},
+	{OriginalURL: "mudmap.io", Hash: "abcdefgh", Data: []adapters.DataPoints{}},
 }
 
 func MockDBConnection() *gorm.DB {
 	log.Println("Connecting to mock database")
-	//database := "file::memory:?cache=shared"
-	database := "test_mock.db"
+	database := "file::memory:?cache=shared"
+	//database := "test_mock.db"
 	db, err := gorm.Open(sqlite.Open(database), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect to adapters")
 	}
-	//adapters.InitialMigrations(database)
+	adapters.InitialMigrations(database)
 	seedDatabase(database)
 	return db
 }
@@ -78,9 +77,30 @@ func TestServer_Router(t *testing.T) {
 		s.router.ServeHTTP(resp, request)
 		checkResponseCode(t, resp.Code, http.StatusBadRequest)
 	})
-	t.Run("GET single link", func(t *testing.T) {
+	t.Run("GET all links", func(t *testing.T) {
 		t.Helper()
-		MockDBConnection()
+		request, err := http.NewRequest(http.MethodGet, "/api/links/all", nil)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		resp := httptest.NewRecorder()
+		s.router.ServeHTTP(resp, request)
+		checkResponseCode(t, resp.Code, http.StatusOK)
+		expected := len(mockLinks)
+		var actual []adapters.Link
+		err = FromJSON(&actual, resp.Body)
+		if err != nil {
+			t.Fatalf("Unable to parse response from server %q into slice of adapters.Link, '%v'", resp.Body, err)
+		}
+		t.Log(resp.Body.String())
+		t.Logf("%#v", actual)
+		if len(actual) != expected {
+			t.Errorf("actual did not return correct number of rows")
+		}
+	})
+	t.Run("resolveHash returns a single link", func(t *testing.T) {
+		t.Helper()
 
 		request, err := http.NewRequest(http.MethodGet, "/api/12345678", nil)
 		if err != nil {
@@ -96,22 +116,34 @@ func TestServer_Router(t *testing.T) {
 
 		var actual adapters.Link
 		err = FromJSON(&actual, resp.Body)
-		//err = json.Unmarshal(resp.Body.Bytes(), &actual)
 		t.Logf("%#v", resp)
-		t.Logf("%#v", resp.Body.Bytes())
+		t.Logf("%#v", resp.Body.String())
 		t.Log("actual.URL", actual.OriginalURL)
 		t.Log("actual", actual)
 		t.Log(actual.OriginalURL)
+		t.Log("len", len(actual.OriginalURL))
 		if err != nil {
 			t.Fatalf("Unable to parse response. Expected %q, actual %v", resp.Body, err)
 		}
-		got := actual.OriginalURL
+		got := actual.Hash
 		if expected != got {
 			t.Errorf("expected %v, actual %v", expected, actual)
 		}
-		if !reflect.DeepEqual(actual, expected) {
-			t.Errorf("expected %v, actual %v", expected, actual)
+		//if !reflect.DeepEqual(actual, expected) {
+		//	t.Errorf("expected %v, actual %v", expected, actual)
+		//}
+	})
+	t.Run("resolveHash fails to return a single link and gets 404", func(t *testing.T) {
+		t.Helper()
+
+		request, err := http.NewRequest(http.MethodGet, "/api/doesnotexist", nil)
+		if err != nil {
+			t.Fatalf("err: %s", err)
 		}
+		resp := httptest.NewRecorder()
+		s.router.ServeHTTP(resp, request)
+		checkResponseCode(t, resp.Code, http.StatusNotFound)
+
 	})
 }
 
