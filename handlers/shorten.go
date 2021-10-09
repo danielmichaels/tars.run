@@ -64,9 +64,12 @@ func (s *apiServer) NewLink() http.HandlerFunc {
 // AllLinks returns all links - testing and debug only todo
 func (s *apiServer) AllLinks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var links []adapters.Link
-		s.db.Find(&links)
-		log.Println(links)
+		l := adapters.LinkModel{DB: s.db}
+		links, err := l.All()
+		if err != nil {
+			log.Fatalln("failed to retrieve all Links from database")
+			return
+		}
 
 		if err := s.respondWithJSON(w, links, http.StatusOK); err != nil {
 			http.Error(w, "error occurred", http.StatusInternalServerError)
@@ -96,24 +99,37 @@ func (s *apiServer) resolveHash() http.HandlerFunc {
 		Status uint   `json:"status"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		var link *adapters.Link
+		var link adapters.Link
 		hash := mux.Vars(r)["hash"]
-		err := s.db.Debug().Where("hash = ?", hash).First(&link).Error
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				resp := Response{
-					Msg:    "domain not found",
-					Status: http.StatusNotFound,
-				}
-				if err := s.respondWithJSON(w, &resp, http.StatusNotFound); err != nil {
-					http.Error(w, "internal server error", http.StatusInternalServerError)
-					return
-				}
-				return
-			} else {
-				http.Error(w, "failed to complete search", http.StatusInternalServerError)
+		l := adapters.LinkModel{DB: s.db}
+		link, err := l.Create(hash)
+		//log.Println(err)
+		//log.Println(link)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			resp := Response{
+				Msg:    "domain not found",
+				Status: http.StatusNotFound,
+			}
+			if err := s.respondWithJSON(w, &resp, http.StatusNotFound); err != nil {
+				http.Error(w, "internal server error", http.StatusInternalServerError)
 				return
 			}
+			return
+			//if err != nil {
+			//	if errors.Is(err, gorm.ErrRecordNotFound) {
+			//		resp := Response{
+			//			Msg:    "domain not found",
+			//			Status: http.StatusNotFound,
+			//		}
+			//		if err := s.respondWithJSON(w, &resp, http.StatusNotFound); err != nil {
+			//			http.Error(w, "internal server error", http.StatusInternalServerError)
+			//			return
+			//		}
+			//		return
+			//	} else {
+			//		http.Error(w, "failed to complete search", http.StatusInternalServerError)
+			//		return
+			//	}
 		}
 		domain := Response{
 			Msg:    "success",
@@ -140,6 +156,7 @@ func (s *apiServer) resolveHash() http.HandlerFunc {
 			log.Println("failed to save datapoint", err)
 		}
 
+		log.Println("domain resp:", domain)
 		if err := s.respondWithJSON(w, domain, http.StatusOK); err != nil {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return

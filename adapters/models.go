@@ -35,3 +35,24 @@ type DataPoints struct {
 func (l *Link) CreateShortLink() string {
 	return fmt.Sprintf("%s/%s", shorty.AppConfig().Server.AllowedOrigins, l.Hash)
 }
+
+type LinkModel struct {
+	DB *gorm.DB
+}
+
+func (m LinkModel) All() ([]Link, error) {
+	var links []Link
+	if err := m.DB.Find(&links).Error; err != nil {
+		return nil, err
+	}
+	return links, nil
+}
+
+func (m LinkModel) Create(hash string) (Link, error) {
+	var link Link
+	if err := m.DB.Debug().Where("hash = ?", hash).First(&link).Error; err != nil {
+		return link, err
+	}
+
+	return link, nil
+}

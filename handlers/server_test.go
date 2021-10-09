@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -61,6 +62,14 @@ func TestGetIP(t *testing.T) {
 		}
 	}
 
+}
+
+func TestRespondWithJson(t *testing.T) {
+	x := map[string]interface{}{
+		"foo": make(chan int),
+	}
+	_, err := json.Marshal(x)
+	fmt.Println("marshall error:", err)
 }
 
 //////////////////////////////
