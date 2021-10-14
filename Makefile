@@ -59,6 +59,7 @@ db/migration/redo: confirm
 db/migration/create: confirm
 	@echo "creating migration files for ${name} in ${DB_NAME}"
 	goose -dir ./migrations sqlite3 ./${DB_NAME} create ${name} sql
+	goose -dir ./migrations sqlite3 ./${DB_NAME} fix
 
 ## db/migration/status: Check database migration status
 .PHONY: db/migration/status
