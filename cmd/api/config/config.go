@@ -7,9 +7,9 @@ import (
 )
 
 type limiter struct {
-	enabled bool
-	rps     float64
-	burst   int
+	Enabled bool    `env:"RATE_LIMIT_ENABLED,required"`
+	Rps     float64 `env:"RATE_LIMIT_RPS,required"`
+	Burst   int     `env:"RATE_LIMIT_BURST,required"`
 }
 
 type smtp struct {
@@ -38,7 +38,8 @@ type serverConf struct {
 	TimeoutRead    time.Duration `env:"SERVER_TIMEOUT_READ,required"`
 	TimeoutWrite   time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
 	TimeoutIdle    time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
-	Domain         string        `env:"DOMAIN,required"`          // server's domain
+	ApiDomain      string        `env:"API_DOMAIN,required"`      // server's domain
+	FrontendDomain string        `env:"FRONTEND_DOMAIN,required"` // server's domain
 	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,required"` // server's domain
 }
 
