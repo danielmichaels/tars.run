@@ -1,5 +1,5 @@
-include: .env
-
+include .env
+default: help
 
 # ==================================================================================== #
 # HELPERS
@@ -29,6 +29,42 @@ run/api:
 .PHONY: run/api/development
 run/api/development:
 	@air
+
+## db/migrations/up: Run migration up (apply migrations)
+.PHONY: db/migration/up
+db/migration/up: confirm
+	@echo "setting up the database extensions..."
+	goose -dir ./migrations sqlite3 ./${DB_NAME} up
+
+## db/migration/down/to version=$1: Roll back migration to $1
+.PHONY: db/migration/down/to
+db/migration/down/to: confirm
+	@echo "rolling back migrations to ${version}"
+	goose -dir ./migrations sqlite3 ./${DB_NAME} down-to ${version}
+
+## db/migration/down: drop all migrations
+.PHONY: db/migration/down
+db/migration/down: confirm
+	@echo "rolling back all migrations"
+	goose -dir ./migrations sqlite3 ./${DB_NAME} down
+
+## db/migration/redo: rollback latest migration, then reapply
+.PHONY: db/migration/redo
+db/migration/redo: confirm
+	@echo "rolling back latest migration, then re-applying it; redo"
+	goose -dir ./migrations sqlite3 ./${DB_NAME} redo
+
+## db/migration/create name=$1: Create new migrations with name of $1
+.PHONY: db/migration/create
+db/migration/create: confirm
+	@echo "creating migration files for ${name} in ${DB_NAME}"
+	goose -dir ./migrations sqlite3 ./${DB_NAME} create ${name} sql
+
+## db/migration/status: Check database migration status
+.PHONY: db/migration/status
+db/migration/status:
+	@echo "checking migration status for ${DB_NAME}"
+	goose -dir ./migrations sqlite3 ./${DB_NAME} status
 # ==================================================================================== #
 # QUALITY CONTROL
 # ==================================================================================== #
