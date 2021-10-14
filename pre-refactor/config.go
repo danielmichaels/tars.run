@@ -1,4 +1,4 @@
-package shorty
+package pre_refactor
 
 import (
 	"github.com/joeshaw/envdecode"
