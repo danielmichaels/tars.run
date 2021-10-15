@@ -19,16 +19,20 @@ confirm:
 # DEVELOPMENT
 # ==================================================================================== #
 
+## env: print environment variables (makefile sanity check)
+.PHONY: env
+env:
+	env
+
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
 	go run ./cmd/api
 
-
 ## run/api/development: run the API server with hot-reloading (uses `air`)
 .PHONY: run/api/development
 run/api/development:
-	@air
+	air
 
 ## db/migrations/up: Run migration up (apply migrations)
 .PHONY: db/migration/up
