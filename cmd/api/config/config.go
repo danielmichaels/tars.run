@@ -12,20 +12,11 @@ type limiter struct {
 	Burst   int     `env:"RATE_LIMIT_BURST,required"`
 }
 
-type smtp struct {
-	host     string
-	port     int
-	username string
-	password string
-	sender   string
-}
-
 type Conf struct {
 	Debug   bool `env:"DEBUG,required"`
 	Server  serverConf
 	Db      dbConf
 	Limiter limiter
-	Smtp    smtp
 	Local   bool `env:"LOCAL,required"`
 }
 
