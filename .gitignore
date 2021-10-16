@@ -5,6 +5,11 @@
 ### Custom ###
 # ignore air related stuff
 tmp/*
+bin/*
+
+# ignore databases
+.*.db-litestream
+/data
 
 ### Go ###
 # Binaries for programs and plugins

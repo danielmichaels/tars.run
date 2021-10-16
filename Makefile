@@ -102,15 +102,29 @@ current_time = $(shell date --iso-8601=seconds)
 git_description = $(shell git describe --always --dirty --tags --long)
 linker_flags = '-s -X main.buildTime=${current_time} -X main.version=${git_description}'
 
-## build/api: build the cmd/api application
+## build/api: build the cmd/api application for supported distro's
 .PHONY: build/api
 build/api:
 	@echo 'Building cmd/api...'
 	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./cmd/api
 
+## build/api/docker: build the cmd/api application for a docker image
+.PHONY: build/api/docker
+build/api/docker:
+	@echo 'Building cmd/api for Docker...'
+	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api
+
+## build/docker/image: build the cmd/api application docker image and run it
+.PHONY: build/docker/image
+build/docker/image:
+	@echo 'Building the shorty:develop-latest docker image and running it...'
+	docker build -t shorty .
+	docker tag shorty shorty:develop-latest
+	docker run --env-file .env -p 1987:1987 shorty:develop-latest
+
 # ==================================================================================== #
 # PRODUCTION
 # ====================================================================================
 
-# build a docker container?
+

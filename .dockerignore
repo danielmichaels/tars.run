@@ -1,0 +1,7 @@
+/vendor
+/bin
+.air.toml
+/tmp
+README.md
+.dockerignore
+.gitignore
