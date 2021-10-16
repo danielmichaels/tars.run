@@ -76,9 +76,6 @@ func (m AnalyticsModel) GetAllForLink(hash string, filters Filters) ([]*Analytic
 		}
 		analytics = append(analytics, &analytic)
 	}
-	if len(analytics) == 0 {
-		return nil, Metadata{}, ErrRecordNotFound
-	}
 	if err = rows.Err(); err != nil {
 		return nil, Metadata{}, err
 	}
