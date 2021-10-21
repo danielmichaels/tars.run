@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// ANALYTICS
+
 type MockAnalyticsModel struct{}
 
 func (m MockAnalyticsModel) GetAllForLink(hash string, filters Filters) ([]*Analytics, Metadata, error) {
@@ -20,6 +22,8 @@ func (m MockAnalyticsModel) Insert(analytics *Analytics) error {
 	log.Print("inserting analytics")
 	return nil
 }
+
+// LINKS
 
 type MockLinksModel struct{}
 
