@@ -8,6 +8,7 @@ import (
 	"github.com/danielmichaels/shortlink-go/internal/logger"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type application struct {
 	config *config.Conf
 	logger *logger.Logger
 	models data.Models
+	wg     sync.WaitGroup
 }
 
 func main() {
