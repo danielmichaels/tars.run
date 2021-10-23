@@ -27,7 +27,7 @@ jobs:
         API_DOMAIN=${{ secrets.API_DOMAIN }}
         FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}
         RATE_LIMIT_ENABLED=true
-        RATE_LIMIT_RPS=${{ secerts.RATE_LIMIT_RPS }}
+        RATE_LIMIT_RPS=${{ secrets.RATE_LIMIT_RPS }}
         RATE_LIMIT_BURST=${{ secrets.RATE_LIMIT_BURST }}
         LITESTREAM_LOCAL_DB_PATH=${{ secrets.LITESTREAM_LOCAL_DB_PATH }}
         DB_SYNC_INTERVAL=${{ secrets.DB_SYNC_INTERVAL }}
