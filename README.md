@@ -19,13 +19,22 @@ cp .env.example .env
 # or feel free to use any other method to inject the required environment variables into your shell.
 ```
 
+The application uses goose to perform database migrations. To bootstrap the database, you'll
+need to install goose and create a SQLite database file.
+
+```shell
+go get -u github.com/pressly/goose/v3/cmd/goose
+mkdir -p data
+touch data/shorty.db.up
+make db/migration/up
+```
+
 In development, the application can be started using `air`. Simply run the `air` command and a
 hot-reloading webserver will be started. The migrations must be applied in order to create the
 tables.
 
 ```shell
 # development
-make db/migration/up
 make run/api
 # for hot-reloading (requires air)
 make run/api/development # or just `air`
