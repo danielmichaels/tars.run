@@ -13,6 +13,31 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Create .env file
+      run: |
+        cat << EOF > .env
+        SERVER_PORT=${{ secrets.SERVER_PORT }}
+        SERVER_TIMEOUT_READ=5s
+        SERVER_TIMEOUT_WRITE=10s
+        SERVER_TIMEOUT_IDLE=120s
+        DB_NAME=${{ secrets.DB_NAME }}
+        DEBUG=0
+        LOCAL=0
+        ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
+        API_DOMAIN=${{ secrets.API_DOMAIN }}
+        FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}
+        RATE_LIMIT_ENABLED=true
+        RATE_LIMIT_RPS=${{ secerts.RATE_LIMIT_RPS }}
+        RATE_LIMIT_BURST=${{ secrets.RATE_LIMIT_BURST }}
+        LITESTREAM_LOCAL_DB_PATH=${{ secrets.LITESTREAM_LOCAL_DB_PATH }}
+        DB_SYNC_INTERVAL=${{ secrets.DB_SYNC_INTERVAL }}
+        S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
+        S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+        S3_DB_URL=${{ secrets.S3_DB_URL }}
+        EOF
+        source .env
+        env
+
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
