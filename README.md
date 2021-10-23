@@ -1,14 +1,14 @@
 # Short Links
 
-A simple short link application backend written in Go. This is exists solely for 
+A simple short link application backend written in Go. This is exists solely for
 learning and personal purposes only.
 
 ## Installation
 
 The prod version runs in a single docker container and is deployed to my personal CapRover instance.
 
-In order to use this projects Dockerfile, you'll need to understand how to use 
-[Litestream] (https://litestream.io) and fill out the appropriate environment variables. 
+In order to use this projects Dockerfile, you'll need to understand how to use
+[Litestream] (https://litestream.io) and fill out the appropriate environment variables.
 Environment variables can be found in `.env.example`.
 
 ```shell
@@ -17,9 +17,9 @@ cp .env.example .env
 # or feel free to use any other method to inject the required environment variables into your shell.
 ```
 
-In development, the application can be started using `air`. Simply run the `air` command and a 
-hot-reloading webserver will be started. The migrations must be applied in order to create the 
-tables. 
+In development, the application can be started using `air`. Simply run the `air` command and a
+hot-reloading webserver will be started. The migrations must be applied in order to create the
+tables.
 
 ```shell
 # development
@@ -33,19 +33,19 @@ make run/api/development # or just `air`
 There is a [Makefile](/Makefile) with a large number of commands.
 
 ## How it works
-The following explanation assumes a frontend exists to send the data and act on the responses. 
-For brevity, this only shows the server request, response cycle and makes assumptions about how 
+The following explanation assumes a frontend exists to send the data and act on the responses.
+For brevity, this only shows the server request, response cycle and makes assumptions about how
 certain parts are handled on the frontend.
 
-A POST request that comes to the server's `/v1/links` with the correct payload will create a new 
-entry in the database with a user supplied link. The server will return a response which 
+A POST request that comes to the server's `/v1/links` with the correct payload will create a new
+entry in the database with a user supplied link. The server will return a response which
 contains the `short_url`.
 
 For example.
 
 ```shell
-❯ curlie http://localhost:1987/v1/links link=danielms.site                        
-HTTP/2 201 
+❯ curlie http://localhost:1987/v1/links link=danielms.site
+HTTP/2 201
 server: nginx
 date: Sat, 23 Oct 2021 10:07:16 GMT
 content-type: application/json
@@ -65,16 +65,16 @@ vary: Access-Control-Request-Method
 }
 ```
 
-When a user visits a valid `short_url` such as above, they will be redirected to its mapped 
-address, in this case, see `original_url` in the example above. 
+When a user visits a valid `short_url` such as above, they will be redirected to its mapped
+address, in this case, see `original_url` in the example above.
 
-If you look closely, the `original_url` actually returns a different port number. In production, this may be an entirely different URL. 
-This is because it is actually the Next.js frontend. When a user visits 
+If you look closely, the `original_url` actually returns a different port number. In production, this may be an entirely different URL.
+This is because it is actually the Next.js frontend. When a user visits
 `https://localhost:1988/ApxmhgiNHc` it will make a call to the backend and return the following.
 
 ```shell
-❯ curlie http://localhost:1987/v1/links/ApxmhgiNHcc        
-HTTP/2 200 
+❯ curlie http://localhost:1987/v1/links/ApxmhgiNHcc
+HTTP/2 200
 server: nginx
 date: Sat, 23 Oct 2021 10:13:34 GMT
 content-type: application/json
@@ -92,15 +92,15 @@ vary: Access-Control-Request-Method
 }
 ```
 
-The frontend will then redirect the user to the `original_url`. During the initial lookup, 
-another database event happens - the user's information such as IP address, user-agent and the 
+The frontend will then redirect the user to the `original_url`. During the initial lookup,
+another database event happens - the user's information such as IP address, user-agent and the
 datetime are recorded for analytics purposes.
 
-From the frontend, users can view their shortened URL analytics. This triggers a request to the 
+From the frontend, users can view their shortened URL analytics. This triggers a request to the
 server which if a valid short link is found, will return a response similar to below.
 
 ```shell
-HTTP/2 200 
+HTTP/2 200
 server: nginx
 date: Sat, 23 Oct 2021 10:18:20 GMT
 content-type: application/json
@@ -158,4 +158,3 @@ vary: Access-Control-Request-Method
 ## License
 
 Licenced under Apache 2.0, see [LICENSE](/LICENSE).
-
