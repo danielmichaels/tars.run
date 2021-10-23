@@ -47,7 +47,7 @@ jobs:
         SERVER_TIMEOUT_WRITE: 10s
         SERVER_TIMEOUT_IDLE: 120s
         DB_NAME: ${{ secrets.DB_NAME }}
-        DEBUG: 1
+        DEBUG: 0
         LOCAL: 0
         ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
         API_DOMAIN: ${{ secrets.API_DOMAIN }}

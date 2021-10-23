@@ -10,6 +10,7 @@ import (
 
 func TestHealthcheckHandler(t *testing.T) {
 	cfg := config.AppConfig()
+	cfg.Debug = false
 	app := &application{config: cfg}
 	t.Run("get request to endpoint successful", func(t *testing.T) {
 		t.Helper()
@@ -26,7 +27,7 @@ func TestHealthcheckHandler(t *testing.T) {
 			t.Errorf("handler returned the wrong status code: got %v want %v", status, http.StatusOK)
 		}
 		// adding the '\n' to writeJSON means we have to include it here or it's not a match
-		expected := `{"status":"available","system_info":{"debug":"true","version":"1.0.0"}}` + "\n"
+		expected := `{"status":"available","system_info":{"debug":"false","version":"1.0.0"}}` + "\n"
 		if rr.Body.String() != expected {
 			t.Errorf("handler returned unexpected body: got %v want %v", rr.Body.String(), expected)
 		}
