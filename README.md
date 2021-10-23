@@ -7,8 +7,8 @@ learning and personal purposes only.
 
 The prod version runs in a single docker container and is deployed to my personal CapRover instance.
 
-In order to use this projects Dockerfile, you'll need to understand how to use 
-[Litestream] (https://litestream.io) and fill out the appropriate environment variables. 
+In order to use this project's Dockerfile, you'll need to understand how to use
+[Litestream](https://litestream.io) and fill out the appropriate environment variables.
 Environment variables can be found in `.env.example`.
 
 ```shell
