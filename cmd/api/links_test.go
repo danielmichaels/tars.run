@@ -37,7 +37,7 @@ func TestLinks(t *testing.T) {
 			t.Errorf("handler returned the wrong status code. got %v want %v", rr.Code, http.StatusMethodNotAllowed)
 		}
 	})
-	t.Run("GET request to /v1/links/fake should return a 404", func(t *testing.T) {
+	t.Run("GET request to /v1/links/fake should return a 307 to Frontend 404 page", func(t *testing.T) {
 		t.Helper()
 		t.Log(cfg.Db)
 		hash := "fake"
@@ -50,11 +50,18 @@ func TestLinks(t *testing.T) {
 		h := a.routes()
 		h.ServeHTTP(rr, r)
 
-		if status := rr.Code; status != http.StatusNotFound {
-			t.Errorf("handler returned the wrong status code. got %v want %v", rr.Code, http.StatusNotFound)
+		if status := rr.Code; status != http.StatusTemporaryRedirect {
+			t.Errorf("handler returned the wrong status code. got %v want %v", rr.Code, http.StatusTemporaryRedirect)
+		}
+
+		e, _ := rr.Result().Location()
+		expected := fmt.Sprintf("%s/404", a.config.Server.FrontendDomain)
+		result := fmt.Sprintf("%s://%s%s", e.Scheme, e.Host, e.Path)
+		if result != expected {
+			t.Errorf("result URL does not match expected URL. got %v want %v", result, expected)
 		}
 	})
-	t.Run("GET request to /v1/links/notfake should return a 200", func(t *testing.T) {
+	t.Run("GET request to /v1/links/notfake should return a 307 to original URL", func(t *testing.T) {
 		t.Helper()
 		hash := "notfake"
 		r, err := http.NewRequest("GET", fmt.Sprintf("/v1/links/%s", hash), nil)
@@ -66,13 +73,15 @@ func TestLinks(t *testing.T) {
 		h := a.routes()
 		h.ServeHTTP(rr, r)
 
-		if status := rr.Code; status != http.StatusOK {
-			t.Errorf("handler returned the wrong status code. got %v want %v", rr.Code, http.StatusOK)
+		if status := rr.Code; status != http.StatusTemporaryRedirect {
+			t.Errorf("handler returned the wrong status code. got %v want %v", rr.Code, http.StatusTemporaryRedirect)
 		}
 
-		expected := `{"link":{"id":1,"created_at":"2020-01-01T00:00:00Z","original_url":"test.com","hash":"notfake"}}` + "\n"
-		if rr.Body.String() != expected {
-			t.Errorf("handler returned unexpected body. got %v want %v", rr.Body.String(), expected)
+		// Really this should return `http://test.com` but it's not for whatever reason.
+		expected := `/v1/links/test.com`
+		location, _ := rr.Result().Location()
+		if location.String() != expected {
+			t.Errorf("handler returned unexpected redirect. got %v want %v", location.String(), expected)
 		}
 	})
 	t.Run("POST a new link", func(t *testing.T) {
