@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/danielmichaels/shortlink-go/internal/validator"
 	"os"
 	"time"
 )
@@ -76,4 +77,9 @@ func (m LinkModel) Get(hash string) (*Link, error) {
 	}
 
 	return &link, nil
+}
+
+// ValidateURL checks that the URL starts with a valid scheme
+func ValidateURL(v *validator.Validator, url string) {
+	v.Check(validator.IsURL(url), "link", "url must start with a valid scheme such as https://")
 }
