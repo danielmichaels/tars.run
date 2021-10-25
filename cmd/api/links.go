@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/validator"
 	"github.com/gorilla/mux"
 	"github.com/tomasen/realip"
-	"net/http"
 )
 
 func (app *application) showLinkHandler() http.HandlerFunc {
@@ -38,14 +39,13 @@ func (app *application) showLinkHandler() http.HandlerFunc {
 			return
 		}
 
-		err = app.writeJSON(w, http.StatusOK, envelope{"link": link}, nil)
+		// Use a temporary redirect status in case we want to support changing
+		// redirect targets in the future.
+		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
 		app.logger.PrintInfo("link data", map[string]string{
 			"link.hash":         link.Hash,
 			"link.original_url": link.OriginalURL,
 		})
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-		}
 	}
 
 }
