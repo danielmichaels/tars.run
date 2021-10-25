@@ -1,6 +1,9 @@
 package validator
 
-import "regexp"
+import (
+	"net/url"
+	"regexp"
+)
 
 // Validator type which contains a map of validation errors
 type Validator struct {
@@ -56,4 +59,11 @@ func Unique(values []string) bool {
 	}
 
 	return len(values) == len(uniqueValues)
+}
+
+// IsURL checks that the supplied URL has a valid scheme
+func IsURL(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Host != "" && u.Scheme == "http" || u.Scheme == "https"
+
 }

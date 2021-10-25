@@ -19,7 +19,9 @@ func (app *application) showLinkHandler() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
-				app.notFoundResponse(w, r)
+				// record not found should not display server response which is unhelpful
+				// it instead redirects to the /404.
+				http.Redirect(w, r, fmt.Sprintf("%s/404", app.config.Server.FrontendDomain), http.StatusTemporaryRedirect)
 			default:
 				app.serverErrorResponse(w, r, err)
 			}
@@ -67,7 +69,12 @@ func (app *application) createLinkHandler() http.HandlerFunc {
 			Hash:        data.CreateURL(),
 		}
 
-		// todo Validate
+		v := validator.New()
+
+		if data.ValidateURL(v, input.Link); !v.Valid() {
+			// prepend http:// to the link provided by the user.
+			link.OriginalURL = fmt.Sprintf("http://%s", input.Link)
+		}
 
 		err = app.models.Links.Insert(link)
 		if err != nil {
