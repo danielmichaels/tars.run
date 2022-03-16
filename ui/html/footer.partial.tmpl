@@ -1,0 +1,23 @@
+{{define "footer"}}
+
+
+    <footer class="bg-gray-800">
+      <div
+              x-data="{links: [ {name: 'About', href: '/about'}, { name: 'Stats', href: '/stats' }]}"
+        class="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
+        <nav class="-mx-5 -my-2 flex flex-wrap justify-center"
+             aria-label="Footer">
+          <template x-for="link in links" :key="link.href">
+             <div class="px-5 py-2">
+              <a :href="link.href"
+                 class="text-base text-gray-500 hover:text-gray-900"><span x-text="link.name"></span>
+              </a>
+            </div>
+          </template>
+        </nav>
+        <p
+          class="mt-8 text-center text-base text-gray-400">&copy;<span x-text=" new Date().getFullYear() "></span> {{ .AppName }}, All rights reserved.
+        </p>
+      </div>
+    </footer>
+{{end}}
