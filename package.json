@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build-css": "tailwindcss -i ui/static/css/main.css -o ui/static/css/theme.css -m",
-    "alpine": "npx esbuild index.js --outfile=ui/static/js/bundle.js --bundle --minify"
+    "alpine": "npx esbuild index.js --outfile=ui/static/js/bundle.js --bundle --minify",
+    "alpine-dev": "npx esbuild index.js --outfile=ui/static/js/bundle.js --bundle"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.0",
