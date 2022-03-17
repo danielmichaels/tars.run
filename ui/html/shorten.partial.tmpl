@@ -1,91 +1,96 @@
 {{ define "shorten"}}
 
-    <div
-      class="py-2 flex flex-col justify-center sm:py-12">
-      <div class="relative py-3 sm:w-11/12 max-w-xl sm:mx-auto">
-        <div
-          class="relative bg-gray-50 p-8 bg-white shadow-sm sm:rounded-xl">
-          <form x-data="shortenForm()"
-                @submit.prevent="submitForm"
-                class="space-y-6"
-          >
-            <div>
-              <div class="mt-1">
-                <label for="link"></label>
-                <input
-                  id="link"
-                  name="link"
-                  type="text"
-                  placeholder="Shorten link"
-                  autoComplete="link"
-                  required
-                  x-model="formData.link"
-                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+  <div
+          class="py-2 flex flex-col justify-center sm:py-12">
+    <div class="relative py-3 sm:w-11/12 max-w-xl sm:mx-auto">
+      <div
+              class="relative bg-gray-50 p-8 bg-white shadow-sm sm:rounded-xl">
+        <form x-data="shortenForm()"
+              @submit.prevent="submitForm"
+              class="space-y-6"
+        >
+          <div>
+            <div class="mt-1">
+              <label for="link"></label>
+              <input
+                      id="link"
+                      name="link"
+                      type="text"
+                      placeholder="Shorten link"
+                      autoComplete="link"
+                      required
+                      x-model="formData.link"
+                      class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
             </div>
-            <div class="pt-0">
-              <div class="flex justify-center items-center">
-                <button
-                        :disabled="formLoading" x-text="buttonText"
-                  type="submit"
-                  class=" justify-center py-2 px-5 w-full lg:w-1/3 md:w-3/4 xl:w-1/2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                >
-                  Shorten
-                </button>
-              </div>
+          </div>
+          <div class="pt-0">
+            <div class="flex justify-center items-center">
+              <button
+                      :disabled="formLoading" x-text="buttonText"
+                      type="submit"
+                      class=" justify-center py-2 px-5 w-full lg:w-1/3 md:w-3/4 xl:w-1/2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              >
+                Shorten
+              </button>
             </div>
-            <div class="mt-5 text-center" :class="formError &&  'text-red-500'" x-text="formMessage"></div>
-          </form>
-        </div>
+          </div>
+          <div class="mt-5 text-center" :class="formError &&  'text-red-500'"
+               x-text="formMessage"></div>
+        </form>
       </div>
     </div>
-      <script>
-          const FORM_URL = "http://localhost:1987/v1/links"
-        function shortenForm() {
-            return {
-                formData: {
-                    link: ""
-                },
-                formMessage: "",
-                formLoading: false,
-                buttonText: "Shorten",
-                formError: false,
-                submitForm() {
-                    console.log(JSON.stringify(this.formData))
-                    this.formMessage = "";
-                    this.formLoading = false;
-                    this.buttonText = "Submitting..."
-                    this.formError = false
-                    fetch(FORM_URL, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                        },
-                        body: JSON.stringify(this.formData)
-                    })
-                        .then(resp =>{
-                            if (resp.ok){
-                                return resp.text()
-                            }
-                            throw new Error("error")
-                        })
-                    .then(() => {
-                        this.formData.link = "";
-                        this.formMessage = "Link successfully saved"
-                    })
-                    .catch(() => {
-                        this.formError = true;
-                        this.formMessage = "Something went wrong";
-                    })
-                    .finally(() => {
-                        this.formLoading = false;
-                        this.buttonText = "Shorten";
-                    })
-                }
-            }
+  </div>
+  <script>
 
-        }
-      </script>
+      const FORM_URL = "http://localhost:1987/v1/links"
+
+      function shortenForm() {
+          return {
+              formData: {
+                  link: ""
+              },
+              formMessage: "",
+              formLoading: false,
+              buttonText: "Shorten",
+              formError: false,
+              submitForm() {
+                  console.log(JSON.stringify(this.formData))
+                  this.formMessage = "";
+                  this.formLoading = false;
+                  this.buttonText = "Submitting..."
+                  this.formError = false
+                  fetch(FORM_URL, {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/json",
+                          "Accept": "application/json",
+                      },
+                      body: JSON.stringify(this.formData)
+                  })
+                  .then(resp => {
+                      if (resp.ok) {
+                          return resp.json()
+                      }
+                      throw new Error("error")
+                  })
+                  .then((resp) => {
+                      console.log(resp)
+                      this.formData.link = "";
+                      this.formMessage = "Link successfully saved"
+                      appendLocalStorageHashes(resp)
+                  })
+                  .catch(() => {
+                      this.formError = true;
+                      this.formMessage = "Something went wrong";
+                  })
+                  .finally(() => {
+                      this.formLoading = false;
+                      this.buttonText = "Shorten";
+                  })
+              }
+          }
+
+      }
+  </script>
 {{end}}
