@@ -1,5 +1,4 @@
 {{define "links"}}
-  <!-- This example requires Tailwind CSS v2.0+ -->
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
@@ -17,17 +16,19 @@
                       @click="expanded = ! expanded">localstorage
               </button>
             </p>
+            <template x-if="true">
             <p x-show="expanded" x-collapse.duration.500ms
                class="mt-3 text-center grow h-14">
               All links below are stored in localstorage - they can be deleted
               or lost easily. Links are persistent and can be used even if no
               longer in your localstorage.
             </p>
+              </template>
           </div>
         </section>
       </div>
     </div>
-    <div x-data="{ hashes: [] }" x-init="hashes = getLinks()">
+    <div x-init="hashes = getLinks()">
       <div class="mt-8 flex flex-col">
         <div class="-mt-2 mb-5 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -102,18 +103,4 @@
       </div>
     </div>
   </div>
-  <script type="text/javascript">
-      function getLinks() {
-          return JSON.parse(localStorage.getItem("hashes"))
-      }
-  </script>
-    <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.store('getHashes', {
-            fire() {
-                getLinks()
-            }
-        })
-    })
-</script>
 {{end}}
