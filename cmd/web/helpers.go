@@ -79,8 +79,10 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	if td == nil {
 		td = &templateData{}
 	}
-	td.AppName = app.config.Server.AppName
 	td.AppUrl = app.config.Server.FrontendDomain
+	td.Names.AppName = app.config.Names.AppName
+	td.Names.Twitter = app.config.Names.TwitterAccount
+	td.Names.Github = app.config.Names.GithubAccount
 	return td
 }
 

@@ -17,10 +17,18 @@ type Conf struct {
 	Server  serverConf
 	Db      dbConf
 	Limiter limiter
+	Names   names
 }
 
 type dbConf struct {
 	DbName string `env:"DB_NAME,default=./data/shorty.db"`
+}
+
+type names struct {
+	// Application Name
+	AppName        string `env:"APP_NAME,default=Tars.Run"`
+	TwitterAccount string `env:"TWITTER_ACCOUNT,default=#"`
+	GithubAccount  string `env:"GITHUB_ACCOUNT,default=#"`
 }
 
 type serverConf struct {
@@ -31,6 +39,10 @@ type serverConf struct {
 	ApiDomain      string        `env:"API_DOMAIN,default=http://localhost:1987"`      // server's domain
 	FrontendDomain string        `env:"FRONTEND_DOMAIN,default=http://localhost:1988"` // server's domain
 	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
+	// Logging
+	LogLevel   string `env:"LOG_LEVEL,default=info"`
+	LogConcise bool   `env:"LOG_CONCISE,default=true"`
+	LogJson    bool   `env:"LOG_JSON,default=false"`
 }
 
 // AppConfig Setup and install the applications' configuration environment variables
