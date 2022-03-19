@@ -6,6 +6,7 @@
 # ignore air related stuff
 tmp/*
 bin/*
+.idea
 
 # ignore databases
 .*.db-litestream
