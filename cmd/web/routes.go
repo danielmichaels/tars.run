@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/validator"
@@ -8,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog"
+	"github.com/tomasen/realip"
 	"net/http"
 	"time"
 )
@@ -26,14 +28,23 @@ func (app *application) routes() http.Handler {
 
 	// Routes
 	r.Get("/", app.handleHomepage())
+	r.Get("/{hash}", app.handleRedirectLink())
 	//r.Get("/v1/healthcheck", app.healthcheckHandler)
-	//r.Get("/v1/links/{hash}", app.showLinkHandler())
 	r.Post("/v1/links", app.handleCreateLink())
 	//r.Get("/v1/links/{hash}/analytics", app.showLinkAnalyticsHandler())
 
 	return r
 }
+func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(404)
+	w.Write([]byte("404 Not Found"))
 
+}
+func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(405)
+	w.Write([]byte("Method Not Allowed"))
+	//app.clientError(w, http.StatusMethodNotAllowed)
+}
 func (app *application) handleHomepage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		links, err := app.models.Links.Get("yUitgPWMVyg")
@@ -86,5 +97,43 @@ func (app *application) handleCreateLink() http.HandlerFunc {
 			app.serverError(w, r, err)
 			return
 		}
+	}
+}
+
+func (app *application) handleRedirectLink() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		hash := chi.URLParam(r, "hash")
+
+		link, err := app.models.Links.Get(hash)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				// record not found should not display server response which is unhelpful
+				// it instead redirects to the /404.
+				app.notFound(w, r)
+			default:
+				app.serverError(w, r, err)
+			}
+			return
+		}
+
+		analytic := data.Analytics{
+			Ip:        realip.FromRequest(r),
+			UserAgent: r.UserAgent(),
+			LinkID:    uint64(link.ID),
+		}
+
+		// this constitutes a query on the link, so we save this to the Analytics table.
+		err = app.models.Analytics.Insert(&analytic)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+		// Use a temporary redirect status in case we want to support changing
+		// redirect targets in the future.
+		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
+		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+		return
 	}
 }

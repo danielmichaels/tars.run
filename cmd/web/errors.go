@@ -14,13 +14,6 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
-	app.clientError(w, http.StatusNotFound)
-}
-func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	app.clientError(w, http.StatusMethodNotAllowed)
-}
-
 // API Errors
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
