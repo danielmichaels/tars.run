@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
-	"github.com/danielmichaels/shortlink-go/cmd/api/config"
+	"github.com/danielmichaels/shortlink-go/internal/config"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/logger"
 	_ "github.com/mattn/go-sqlite3"
