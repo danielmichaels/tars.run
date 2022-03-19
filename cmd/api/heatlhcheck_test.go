@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/danielmichaels/shortlink-go/cmd/api/config"
+	"github.com/danielmichaels/shortlink-go/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"

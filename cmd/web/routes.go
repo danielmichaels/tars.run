@@ -135,7 +135,6 @@ func (app *application) handleRedirectLink() http.HandlerFunc {
 		// redirect targets in the future.
 		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
 		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
-		return
 	}
 }
 
