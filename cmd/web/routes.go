@@ -44,16 +44,9 @@ func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
 func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(405)
 	w.Write([]byte("Method Not Allowed"))
-	//app.clientError(w, http.StatusMethodNotAllowed)
 }
 func (app *application) handleHomepage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		links, err := app.models.Links.Get("yUitgPWMVyg")
-		if err != nil {
-			app.serverError(w, r, err)
-			return
-		}
-		app.logger.Info().Msgf("%#v", links)
 		app.render(w, r, "home.page.tmpl", &templateData{
 			Title: "Home",
 		})
