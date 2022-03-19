@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@alpinejs/collapse@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.9.1.tgz#38ff918b0a9f862ecf7221827467d9a27cceaefc"
+  integrity sha512-ymZfWYQTuD4iO5l+aWkM9LZRLGP0BR6iV+7LZQE0JXLVjapFfVec/5Uk36PdrbdUddv/j5WwN3iaxyAPvfLWig==
+
 "@babel/code-frame@^7.0.0":
   version "7.16.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.16.7.tgz#44416b6bd7624b998f5b1af5d470856c40138789"
