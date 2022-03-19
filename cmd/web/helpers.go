@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -70,4 +71,31 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 		return errors.New("body must contain a single JSON value")
 	}
 	return nil
+}
+
+// addDefaultData is a helper which will pre-fill the templateData struct with
+// default information that is used across several templates.
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.AppName = app.config.Server.AppName
+	td.AppUrl = app.config.Server.FrontendDomain
+	return td
+}
+
+// render is a template rendering helper. It uses a template cache to speed up delivery of templates
+func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	ts, ok := app.template[name]
+	if !ok {
+		http.Error(w, "Template does not exist", 500)
+		return
+	}
+	buf := new(bytes.Buffer)
+	err := ts.Execute(buf, app.addDefaultData(td, r))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	buf.WriteTo(w)
 }
