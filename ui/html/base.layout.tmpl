@@ -8,14 +8,12 @@
     <script src="/static/js/bundle.js" defer></script>
     <script src="/static/js/local-storage.js" defer></script>
     <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
-    <title>{{template "title" .}} - Tars.run</title>
+    <title>{{template "title" .}} - {{ .Names.AppName }}</title>
   </head>
   <body class="h-full">
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-{{/*    <div class="flex flex-col h-screen">*/}}
         {{template "main" .}}
-{{/*    </div>*/}}
   </div>
   </body>
   </html>
