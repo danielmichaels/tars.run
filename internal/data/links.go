@@ -19,7 +19,6 @@ type Link struct {
 	CreatedAt   time.Time `json:"created_at"` // todo: omit?
 	OriginalURL string    `json:"original_url"`
 	Hash        string    `json:"hash"`
-	//Analytics        []Analytics `json:"data,omitempty"`
 }
 
 // CreateShortLink concatenates the current domain and the hash of the link

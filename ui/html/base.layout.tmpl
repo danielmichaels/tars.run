@@ -1,0 +1,22 @@
+{{define "base"}}
+  <!doctype html>
+  <html lang='en' class="h-full bg-gray-100">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/theme.css">
+    <script src="/static/js/bundle.js" defer></script>
+    <script src="/static/js/local-storage.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
+    <title>{{template "title" .}} - Tars.run</title>
+  </head>
+  <body class="h-full">
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+{{/*    <div class="flex flex-col h-screen">*/}}
+        {{template "main" .}}
+{{/*    </div>*/}}
+  </div>
+  </body>
+  </html>
+{{end}}

@@ -3,6 +3,7 @@ package validator
 import (
 	"net/url"
 	"regexp"
+	"strconv"
 )
 
 // Validator type which contains a map of validation errors
@@ -66,4 +67,39 @@ func IsURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Host != "" && u.Scheme == "http" || u.Scheme == "https"
 
+}
+
+// ReadInt reads string value from the query string and converts it to an integer
+// before returning. If no matching key is found it returns the provided default
+// value. If the value couldn't be converted to an int, then we record an error
+// message in the provided Validator instance.
+func ReadInt(qs url.Values, key string, defaultValue int, v *Validator) int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	// Try to convert the value to an int. If this fails, add an error message to
+	// the validator instance and return the default value.
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be an integer value")
+		return defaultValue
+	}
+	return i
+}
+
+// ReadString returns a string value from the query string, or the provided
+// default value if no matching key is found.
+func ReadString(qs url.Values, key string, defaultValue string) string {
+	// Extract the value for a given key from the query string. If no key exists
+	// this will return the empty string "".
+	s := qs.Get(key)
+
+	// If no key exists (or value is empty) then return the default value.
+	if s == "" {
+		return defaultValue
+	}
+	return s
 }
