@@ -1,12 +1,13 @@
-# Short Links
+# Tars.Run
 
 A simple short link application backend written in Go. This is exists solely for
 learning and personal purposes only.
 
+This application can be run as an API backend, or as a standalone web application.
+
 ## Installation
 
-The prod version runs in a single docker container and is deployed to my personal CapRover instance.
-
+The prod version runs in a single docker container with a dependency on [Litestream](https://litestream.io).
 
 In order to use this project's Dockerfile, you'll need to understand how to use
 [Litestream](https://litestream.io) and fill out the appropriate environment variables.
@@ -36,14 +37,44 @@ tables.
 ```shell
 # development
 make run/api
+# OR for web backend
+make run/web
 # for hot-reloading (requires air)
 make run/api/development # or just `air`
 ```
 **Note: hot-reloading requires [air](https://github.com/cosmtrek/air)**
 
+By default, `air` will run the web backend. Update the `.air.toml` file replacing `cmd/web` with 
+`cmd/api` if you are working with the API backend.
+
 There is a [Makefile](/Makefile) with a large number of commands.
 
-## How it works
+## Web version
+
+### How it works 
+
+This version of the application is self-contained using Go templates and embedded files. Adding 
+new links is done via a `POST` request to the `v1/links` endpoint which saves it to the database 
+and renders it in the template. All other endpoints are `GET` requests and accessible via the 
+web pages `/` and `/{hash}/analytics`.
+
+When developing, if adding new Tailwind classes you may be required to re-run the Tailwind 
+compiler. To do that just run 'npm build-css' which will output a minified CSS file named `theme.css` 
+in `/ui/static/css`. This is used in the `base.layout.tmpl` template. Both Alpine.js and 
+Tailwind are self-contained in this binary for portability and to reduce network calls.
+
+### Endpoints
+
+| Method | URL | Handler              | Action | Authentication |
+|---|---|----------------------|---|---|
+| GET | `/` | `handleHomepage`     | Retrieves all links | False |
+| GET | `/:hash` | `handleRedirectLink` | Retrieves a single link | False |
+| POST | `/v1/links` | `handleCreateLink`   | Creates a new link | False |
+
+## API version
+
+### How it works (API version)
+
 The following explanation assumes a frontend exists to send the data and act on the responses.
 For brevity, this only shows the server request, response cycle and makes assumptions about how
 certain parts are handled on the frontend.
@@ -139,7 +170,7 @@ vary: Access-Control-Request-Method
 
 ```
 
-## Endpoints
+### Endpoints
 
 | Method | URL | Handler | Action | Authentication |
 |---|---|---|---|---|
@@ -164,6 +195,7 @@ vary: Access-Control-Request-Method
 ## Stack
 
 - Gorilla mux webserver
+- go-chi
 - Sqlite (with Litestream)
 
 ## License
