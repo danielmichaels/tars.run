@@ -23,8 +23,12 @@ type application struct {
 }
 
 type templateData struct {
-	Title   string
-	AppName string
+	Title     string
+	AppName   string
+	AppUrl    string
+	Link      *data.Link
+	Analytics []*data.Analytics
+	Metadata  data.Metadata
 }
 
 func main() {

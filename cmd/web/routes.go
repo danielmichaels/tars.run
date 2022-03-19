@@ -29,9 +29,10 @@ func (app *application) routes() http.Handler {
 	// Routes
 	r.Get("/", app.handleHomepage())
 	r.Get("/{hash}", app.handleRedirectLink())
+	r.Get("/{hash}/analytics", app.handleLinkAnalytics())
+
 	//r.Get("/v1/healthcheck", app.healthcheckHandler)
 	r.Post("/v1/links", app.handleCreateLink())
-	//r.Get("/v1/links/{hash}/analytics", app.showLinkAnalyticsHandler())
 
 	return r
 }
@@ -135,5 +136,52 @@ func (app *application) handleRedirectLink() http.HandlerFunc {
 		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
 		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
 		return
+	}
+}
+
+func (app *application) handleLinkAnalytics() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		hash := chi.URLParam(r, "hash")
+		var input struct {
+			data.Filters
+		}
+		v := validator.New()
+
+		qs := r.URL.Query()
+
+		// Allow ability to paginate response in the future.
+		input.Filters.Page = validator.ReadInt(qs, "page", 1, v)
+		input.Filters.PageSize = validator.ReadInt(qs, "page_size", 20, v)
+		input.Filters.Sort = validator.ReadString(qs, "sort", "date_accessed")
+		input.Filters.SortSafeList = []string{"id", "date_accessed", "user_agent", "ip", "-id", "-date_accessed", "-user_agent", "-ip"}
+
+		if data.ValidateFilters(v, input.Filters); !v.Valid() {
+			app.failedValidationResponse(w, r, v.Errors)
+			return
+		}
+
+		analytics, metadata, err := app.models.Analytics.GetAllForLink(hash, input.Filters)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				app.notFound(w, r)
+			default:
+				app.serverError(w, r, err)
+			}
+			return
+		}
+		link, err := app.models.Links.Get(hash)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+
+		app.logger.Info().Msgf("%#v", analytics)
+		app.render(w, r, "analytics.page.tmpl", &templateData{
+			Title:     "Analytics",
+			Link:      link,
+			Analytics: analytics,
+			Metadata:  metadata,
+		})
 	}
 }

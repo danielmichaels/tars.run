@@ -43,7 +43,7 @@
     </div>
   </div>
   <script>
-      const FORM_URL = "http://localhost:1987/v1/links"
+      const FORM_URL = "{{ .AppUrl }}/v1/links"
       function shortenForm() {
           return {
               formData: {

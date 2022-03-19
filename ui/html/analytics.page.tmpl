@@ -1,0 +1,115 @@
+{{template "base" .}}
+
+{{define "title"}}Analytics{{end}}
+{{define "main"}}
+  <div class="mx-auto h-screen">
+    <div class="sm:flex sm:items-center pt-10">
+      <div class="sm:flex-auto">
+        <h1 class="text-center text-xl font-semibold text-gray-900">Link
+          Analytics</h1>
+        <a href="{{ .Link.OriginalURL}}" target="_blank"
+           class="underline hover:bg-yellow-300">
+          <p class="text-center mt-2 text-sm text-gray-700">{{ .Link.OriginalURL}}</p>
+        </a>
+        <p class="text-center mt-2 text-sm text-gray-700">A list of analytics
+          for the url
+          including the visitors IP address, user agent and date accessed.</p>
+      </div>
+    </div>
+      {{ if .Analytics}}
+        <div>
+          <div class="pt-10 flex-1 flex items-center justify-center px-2 lg:ml-1 lg:justify-end">
+            <a href="/">
+              <button class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-500 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              >Home
+              </button>
+            </a>
+            <p class="ml-5 mr-auto text-sm text-gray-700">Total Visits:
+              <span>{{ len .Analytics}}</span>
+            </p>
+            <input type="text" id="searchBar"
+                   onkeyup="searchTable()"
+                   class="block w-1/2 bg-white border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm placeholder-gray-400 focus:outline-none focus:bg-white focus:border-white focus:ring-white focus:text-gray-900 focus:placeholder-gray-500 sm:text-sm"
+                   placeholder="Search...">
+          </div>
+          <div class="mt-8 flex flex-col">
+            <div class="-mt-2 mb-5 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <table id="analyticsTable"
+                         class="min-w-full divide-y divide-gray-300">
+                    <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col"
+                          class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                        IP Address
+                      </th>
+                      <th scope="col"
+                          class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        User Agent
+                      </th>
+                      <th scope="col"
+                          class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Date Accessed
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white">
+                    {{ range .Analytics }}
+                      <tr>
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            {{ .Ip}}
+                        </td>
+                        <td class="px-3 py-4 text-sm text-gray-500">
+                            {{ .UserAgent}}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {{ humanDate .DateAccessed}}
+                        </td>
+                      </tr>
+                    {{ end }}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{ else }}
+        <div class="pt-10 flex-1 flex items-center justify-center px-2 lg:ml-1 lg:justify-end">
+          <a href="/">
+            <button class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-500 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            >Home
+            </button>
+          </a>
+          <p class="ml-5 mr-auto text-sm text-gray-700">Total Visits:
+            <span>{{ len .Analytics}}</span>
+          </p>
+        </div>
+      {{end}}
+  </div>
+  <script>
+      function searchTable() {
+          let input, filter, table, tr, td, cell, i;
+          input = document.getElementById("searchBar");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("analyticsTable");
+          tr = table.getElementsByTagName("tr");
+          for (i = 1; i < tr.length; i++) {
+              // Hide the row initially.
+              tr[i].style.display = "none";
+
+              td = tr[i].getElementsByTagName("td");
+              for (let j = 0; j < td.length; j++) {
+                  cell = tr[i].getElementsByTagName("td")[j];
+                  if (cell) {
+                      if (cell.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                          tr[i].style.display = "";
+                          break;
+                      }
+                  }
+              }
+          }
+      }
+  </script>
+{{end}}
