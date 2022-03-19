@@ -1,13 +1,10 @@
 {{ define "shorten"}}
 
-  <div
-          class="py-2 flex flex-col justify-center sm:py-12">
+  <div class="py-2 flex flex-col justify-center sm:py-12">
     <div class="relative py-3 sm:w-11/12 max-w-xl sm:mx-auto">
-      <div
-              class="relative bg-gray-50 p-8 bg-white shadow-sm sm:rounded-xl">
+      <div class="relative bg-gray-50 p-8 bg-white shadow-sm sm:rounded-xl">
         <form x-data="shortenForm()"
               @submit.prevent="submitForm"
-              @click="$store.getHashes.fire()"
               class="space-y-6"
         >
           <div>
@@ -78,6 +75,8 @@
                       this.formData.link = "";
                       this.formMessage = "Link successfully saved"
                       appendLocalStorageHashes(resp)
+                      // less elegant way to force update links table
+                      window.location.reload();
                   })
                   .catch(() => {
                       this.formError = true;
