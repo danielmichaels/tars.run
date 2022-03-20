@@ -31,7 +31,6 @@ func (app *application) routes() http.Handler {
 	r.Get("/{hash}", app.handleRedirectLink())
 	r.Get("/{hash}/analytics", app.handleLinkAnalytics())
 
-	//r.Get("/v1/healthcheck", app.healthcheckHandler)
 	r.Post("/v1/links", app.handleCreateLink())
 
 	return r
