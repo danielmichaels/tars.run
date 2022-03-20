@@ -32,9 +32,10 @@ type templateData struct {
 }
 
 type userTemplateData struct {
-	AppName string
-	Github  string
-	Twitter string
+	AppName   string
+	Github    string
+	Twitter   string
+	Plausible string
 }
 
 func main() {

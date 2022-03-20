@@ -8,6 +8,9 @@
     <script src="/static/js/bundle.js" defer></script>
     <script src="/static/js/local-storage.js" defer></script>
     <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
+    {{ if .Names.Plausible }}
+      <script defer data-domain="{{ .Names.Plausible }}" src="https://plausible.io/js/plausible.js"></script>
+    {{ end }}
     <title>{{template "title" .}} - {{ .Names.AppName }}</title>
   </head>
   <body class="h-full">
