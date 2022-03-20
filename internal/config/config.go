@@ -26,9 +26,10 @@ type dbConf struct {
 
 type names struct {
 	// Application Name
-	AppName        string `env:"APP_NAME,default=Tars.Run"`
-	TwitterAccount string `env:"TWITTER_ACCOUNT,default=#"`
-	GithubAccount  string `env:"GITHUB_ACCOUNT,default=#"`
+	AppName          string `env:"APP_NAME,default=Tars.Run"`
+	TwitterAccount   string `env:"TWITTER_ACCOUNT,default=#"`
+	GithubAccount    string `env:"GITHUB_ACCOUNT,default=#"`
+	PlausibleAccount string `env:"PLAUSIBLE_ACCOUNT,default="`
 }
 
 type serverConf struct {
