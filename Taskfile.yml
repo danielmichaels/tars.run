@@ -1,0 +1,83 @@
+# https://taskfile.dev
+
+version: '3'
+vars:
+  DATABASE_URL: ./data/shorty.db
+dotenv:
+  - .env
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+  dev:
+    desc: Run hot-loading dev server
+    cmds:
+      - air
+  db:migration:up:
+    desc: Run migrations (all of them)
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} up
+  db:migration:down:
+    desc: Drop all migrations
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} down
+  db:migration:down:to:
+    desc: Run migrations back to a specific version
+    summary: |
+      Rollback to a specific version of the local migrations. Must provide the version
+      as an argument.
+      Example,
+      task db:migration:down:to -- 0001
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} down-to {{.CLI_ARGS}}
+  db:migration:create:
+    desc: Create a new migration. The migration name is the value after --
+    summary: |
+      Create a new migrations file using the following syntax
+      task db:migration:create -- my-new-migration
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} create {{.CLI_ARGS}} sql
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} fix
+  db:migration:redo:
+    desc: Rollback the latest migration, the reapply
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} redo
+  db:migration:status:
+    desc: Get the migration status of the local sqlite database
+    summary: |
+      Example usage
+      task db:migration:status
+    cmds:
+      - goose -dir ./assets/migrations sqlite {{.DATABASE_URL}} status
+  pnpm:
+    desc: Install javascript dependencies
+    cmds:
+      - pnpm install
+  tailwind:
+    desc: Install tailwind dependencies
+    cmds:
+      - pnpm run tailwind
+  audit:
+    desc: Run linters and betteralign
+    cmds:
+      - betteralign -apply ./...
+      - golangci-lint run ./... {{.CLI_ARGS}}
+  alpine:
+    desc: Install Alpine.js dependencies
+    cmds:
+      - pnpm run alpine
+  assets:
+    desc: Run all javascript related tasks in one go
+    cmds:
+      - task: pnpm
+      - task: tailwind
+      - task: alpine
+  watchassets:
+    desc: Watch assets and re-build on change
+    cmds:
+      - fd . assets | entr task assets
+  golines:
+    desc: run golines . -w
+    cmds:
+      - golines . -w
