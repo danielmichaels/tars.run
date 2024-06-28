@@ -5,8 +5,6 @@ tmp_dir = "tmp"
 
 [build]
 bin = "./tmp/shorty serve"
-#cmd = "go build -o ./tmp/shorty ./cmd/api"
-#cmd = "go build -o ./tmp/shorty ./cmd/web"
 cmd = "go build -o ./tmp/shorty ./cmd/app"
 delay = 1000
 exclude_dir = ["assets", "tmp", "vendor", "bin", "data", "node_modules"]
@@ -16,7 +14,7 @@ exclude_unchanged = false
 follow_symlink = false
 full_bin = ""
 include_dir = []
-include_ext = ["go", "tpl", "tmpl", "html"]
+include_ext = ["go", "tpl", "tmpl", "html", "templ"]
 kill_delay = "0s"
 log = "build-errors.log"
 send_interrupt = false

@@ -12,7 +12,7 @@ import (
 func OpenDB(cfg *config.Conf) (*sql.DB, error) {
 	// Use sql.Open() to create an empty connection pool, using the DSN from the
 	// config struct
-	db, err := sql.Open("sqlite3", cfg.Db.DbName)
+	db, err := sql.Open("sqlite", cfg.Db.DbName)
 	if err != nil {
 		return nil, err
 	}
