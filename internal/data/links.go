@@ -16,10 +16,10 @@ import (
 // `hash`. This is so that we can prepend the DOMAIN with the hash during the
 // translation - it prevents database corruption if the domain name is the change.
 type Link struct {
-	ID          int64     `json:"id"`         // todo: omit
 	CreatedAt   time.Time `json:"created_at"` // todo: omit?
 	OriginalURL string    `json:"original_url"`
 	Hash        string    `json:"hash"`
+	ID          int64     `json:"id"` // todo: omit
 }
 
 // CreateShortLink concatenates the current domain and the hash of the link

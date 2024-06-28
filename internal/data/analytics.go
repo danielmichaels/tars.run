@@ -9,12 +9,12 @@ import (
 
 // Analytics belongs to Link,
 type Analytics struct {
-	ID        uint   `json:"id"`
-	LinkID    uint64 `json:"-"`
-	Ip        string `json:"ip_address"`
-	UserAgent string `json:"user_agent"`
 	//Location     string    `json:"location"` todo: add topo location data from IP
 	DateAccessed time.Time `json:"date_accessed"`
+	Ip           string    `json:"ip_address"`
+	UserAgent    string    `json:"user_agent"`
+	ID           uint      `json:"id"`
+	LinkID       uint64    `json:"-"`
 }
 
 type AnalyticsModel struct {

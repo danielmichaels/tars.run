@@ -14,11 +14,11 @@ type limiter struct {
 }
 
 type Conf struct {
-	Debug   bool `env:"DEBUG,default=false"`
-	Server  serverConf
-	Db      dbConf
-	Limiter limiter
 	Names   names
+	Db      dbConf
+	Server  serverConf
+	Limiter limiter
+	Debug   bool `env:"DEBUG,default=false"`
 }
 
 type dbConf struct {
@@ -34,17 +34,17 @@ type names struct {
 }
 
 type serverConf struct {
+	ApiDomain      string `env:"API_DOMAIN,default=http://localhost:1987"`      // server's domain
+	FrontendDomain string `env:"FRONTEND_DOMAIN,default=http://localhost:1988"` // server's domain
+	// Logging
+	LogLevel       string        `env:"LOG_LEVEL,default=info"`
+	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
 	Port           int           `env:"SERVER_PORT,default=1987"`
 	TimeoutRead    time.Duration `env:"SERVER_TIMEOUT_READ,default=5s"`
 	TimeoutWrite   time.Duration `env:"SERVER_TIMEOUT_WRITE,default=10s"`
 	TimeoutIdle    time.Duration `env:"SERVER_TIMEOUT_IDLE,default=120s"`
-	ApiDomain      string        `env:"API_DOMAIN,default=http://localhost:1987"`      // server's domain
-	FrontendDomain string        `env:"FRONTEND_DOMAIN,default=http://localhost:1988"` // server's domain
-	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
-	// Logging
-	LogLevel   string `env:"LOG_LEVEL,default=info"`
-	LogConcise bool   `env:"LOG_CONCISE,default=true"`
-	LogJson    bool   `env:"LOG_JSON,default=false"`
+	LogConcise     bool          `env:"LOG_CONCISE,default=true"`
+	LogJson        bool          `env:"LOG_JSON,default=false"`
 }
 
 // AppConfig Setup and install the applications' configuration environment variables
