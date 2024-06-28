@@ -3,9 +3,10 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/danielmichaels/shortlink-go/internal/config"
 	_ "modernc.org/sqlite"
-	"time"
 )
 
 // OpenDB returns a sql connection pool

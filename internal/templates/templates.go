@@ -1,11 +1,12 @@
 package templates
 
 import (
-	"github.com/danielmichaels/shortlink-go/assets"
 	"html/template"
 	"io/fs"
 	"path/filepath"
 	"time"
+
+	"github.com/danielmichaels/shortlink-go/assets"
 )
 
 func humanDate(t time.Time) string {

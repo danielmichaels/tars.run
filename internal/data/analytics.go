@@ -39,7 +39,10 @@ func (m AnalyticsModel) Insert(analytics *Analytics) error {
 	)
 }
 
-func (m AnalyticsModel) GetAllForLink(hash string, filters Filters) ([]*Analytics, Metadata, error) {
+func (m AnalyticsModel) GetAllForLink(
+	hash string,
+	filters Filters,
+) ([]*Analytics, Metadata, error) {
 	query := fmt.Sprintf(`
 		SELECT count(*) over(), analytics.id, analytics.date_accessed, analytics.ip, analytics.user_agent
 		FROM analytics

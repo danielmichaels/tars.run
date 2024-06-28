@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+
 	"github.com/danielmichaels/shortlink-go/internal/config"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	zlog "github.com/danielmichaels/shortlink-go/internal/logger"

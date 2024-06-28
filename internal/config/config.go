@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/joeshaw/envdecode"
 	"log"
 	"time"
+
+	"github.com/joeshaw/envdecode"
 )
 
 type limiter struct {

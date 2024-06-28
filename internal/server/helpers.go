@@ -12,7 +12,12 @@ import (
 
 type M map[string]interface{}
 
-func (app *Application) writeJSON(w http.ResponseWriter, status int, data M, headers http.Header) error {
+func (app *Application) writeJSON(
+	w http.ResponseWriter,
+	status int,
+	data M,
+	headers http.Header,
+) error {
 	js, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -44,14 +49,23 @@ func (app *Application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 
 		switch {
 		case errors.As(err, &syntaxError):
-			return fmt.Errorf("body contains badly-formed JSON (at character %d)", syntaxError.Offset)
+			return fmt.Errorf(
+				"body contains badly-formed JSON (at character %d)",
+				syntaxError.Offset,
+			)
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			return errors.New("body contains badly-formed JSON")
 		case errors.As(err, &unmarshallTypeError):
 			if unmarshallTypeError.Field != "" {
-				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshallTypeError.Field)
+				return fmt.Errorf(
+					"body contains incorrect JSON type for field %q",
+					unmarshallTypeError.Field,
+				)
 			}
-			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshallTypeError.Offset)
+			return fmt.Errorf(
+				"body contains incorrect JSON type (at character %d)",
+				unmarshallTypeError.Offset,
+			)
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
@@ -88,7 +102,12 @@ func (app *Application) addDefaultData(td *templateData, r *http.Request) *templ
 }
 
 // render is a template rendering helper. It uses a template cache to speed up delivery of templates
-func (app *Application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+func (app *Application) render(
+	w http.ResponseWriter,
+	r *http.Request,
+	name string,
+	td *templateData,
+) {
 	ts, ok := app.Template[name]
 	if !ok {
 		http.Error(w, "Template does not exist", 500)

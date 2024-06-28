@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/danielmichaels/shortlink-go/internal/config"
-	"github.com/danielmichaels/shortlink-go/internal/data"
-	"github.com/rs/zerolog"
 	"html/template"
 	"net/http"
 	"os"
@@ -14,6 +11,10 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/danielmichaels/shortlink-go/internal/config"
+	"github.com/danielmichaels/shortlink-go/internal/data"
+	"github.com/rs/zerolog"
 )
 
 type Application struct {

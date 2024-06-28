@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/danielmichaels/shortlink-go/internal/cmd"
 	"os"
 	"os/signal"
+
+	"github.com/danielmichaels/shortlink-go/internal/cmd"
 )
 
 func main() {

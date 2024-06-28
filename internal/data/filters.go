@@ -1,9 +1,10 @@
 package data
 
 import (
-	"github.com/danielmichaels/shortlink-go/internal/validator"
 	"math"
 	"strings"
+
+	"github.com/danielmichaels/shortlink-go/internal/validator"
 )
 
 type Filters struct {

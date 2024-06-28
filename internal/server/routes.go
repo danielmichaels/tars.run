@@ -3,6 +3,9 @@ package server
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/danielmichaels/shortlink-go/assets"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/validator"
@@ -10,8 +13,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog"
 	"github.com/tomasen/realip"
-	"net/http"
-	"time"
 )
 
 func (app *Application) routes() http.Handler {
@@ -93,7 +94,12 @@ func (app *Application) handleCreateLink() http.HandlerFunc {
 		headers := make(http.Header)
 		headers.Set("Location", fmt.Sprintf("/v1/links/%s", link.Hash))
 
-		err = app.writeJSON(w, http.StatusCreated, M{"link": link, "short_url": link.CreateShortLink()}, headers)
+		err = app.writeJSON(
+			w,
+			http.StatusCreated,
+			M{"link": link, "short_url": link.CreateShortLink()},
+			headers,
+		)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
@@ -152,7 +158,16 @@ func (app *Application) handleLinkAnalytics() http.HandlerFunc {
 		input.Filters.Page = validator.ReadInt(qs, "page", 1, v)
 		input.Filters.PageSize = validator.ReadInt(qs, "page_size", 20, v)
 		input.Filters.Sort = validator.ReadString(qs, "sort", "date_accessed")
-		input.Filters.SortSafeList = []string{"id", "date_accessed", "user_agent", "ip", "-id", "-date_accessed", "-user_agent", "-ip"}
+		input.Filters.SortSafeList = []string{
+			"id",
+			"date_accessed",
+			"user_agent",
+			"ip",
+			"-id",
+			"-date_accessed",
+			"-user_agent",
+			"-ip",
+		}
 
 		if data.ValidateFilters(v, input.Filters); !v.Valid() {
 			app.failedValidationResponse(w, r, v.Errors)

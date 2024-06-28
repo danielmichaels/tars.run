@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/danielmichaels/shortlink-go/internal/validator"
 	"os"
 	"time"
+
+	"github.com/danielmichaels/shortlink-go/internal/validator"
 )
 
 // Link holds the domain information
