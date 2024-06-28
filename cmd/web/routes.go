@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/danielmichaels/shortlink-go/assets"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/validator"
-	"github.com/danielmichaels/shortlink-go/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog"
@@ -23,7 +23,7 @@ func (app *application) routes() http.Handler {
 	r.NotFound(app.notFound)
 	r.MethodNotAllowed(app.methodNotAllowed)
 	// fileServer for static assets
-	fileServer := http.FileServer(neuteredFileSystem{http.FS(ui.Files)})
+	fileServer := http.FileServer(neuteredFileSystem{http.FS(assets.Files)})
 	r.Handle("/static/*", fileServer)
 
 	// Routes

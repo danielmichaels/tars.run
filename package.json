@@ -1,21 +1,21 @@
 {
   "scripts": {
-    "build-css": "tailwindcss -i ui/static/css/main.css -o ui/static/css/theme.css -m",
+    "tailwind": "tailwindcss -i assets/static/css/main.css -o ui/static/css/theme.css -m",
     "alpine": "npx esbuild index.js --outfile=ui/static/js/bundle.js --bundle --minify",
     "alpine-dev": "npx esbuild index.js --outfile=ui/static/js/bundle.js --bundle"
   },
   "devDependencies": {
-    "@tailwindcss/aspect-ratio": "^0.4.0",
-    "@tailwindcss/forms": "^0.5.0",
-    "autoprefixer": "^10.4.2",
-    "postcss": "^8.4.8",
-    "tailwindcss": "^3.0.23"
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
   },
   "dependencies": {
-    "@alpinejs/collapse": "^3.9.1",
-    "@ryangjchandler/alpine-clipboard": "^2.1.0",
-    "@tailwindcss/typography": "^0.5.2",
-    "alpinejs": "^3.9.1",
-    "esbuild": "^0.14.25"
+    "@alpinejs/collapse": "^3.14.1",
+    "@ryangjchandler/alpine-clipboard": "^2.3.0",
+    "@tailwindcss/typography": "^0.5.13",
+    "alpinejs": "^3.14.1",
+    "esbuild": "^0.21.5"
   }
 }

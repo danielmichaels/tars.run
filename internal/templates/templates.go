@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"github.com/danielmichaels/shortlink-go/ui"
+	"github.com/danielmichaels/shortlink-go/assets"
 	"html/template"
 	"io/fs"
 	"path/filepath"
@@ -24,7 +24,7 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 
 	// Use fs.Glob() to get a slice of all the filepaths in the ui.Files embedded filesystem
 	// which match the pattern 'html/*page.tmpl'.
-	pages, err := fs.Glob(ui.Files, "html/*.page.tmpl")
+	pages, err := fs.Glob(assets.Files, "html/*.page.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -32,18 +32,18 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		// Use ParseFS() to parse a specific page template from ui.Files
-		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, page)
+		ts, err := template.New(name).Funcs(functions).ParseFS(assets.Files, page)
 		if err != nil {
 			return nil, err
 		}
 
 		// Collect any 'partials'
-		ts, err = ts.ParseFS(ui.Files, "html/*.partial.tmpl")
+		ts, err = ts.ParseFS(assets.Files, "html/*.partial.tmpl")
 		if err != nil {
 			return nil, err
 		}
 		// Collect any layouts
-		ts, err = ts.ParseFS(ui.Files, "html/*.layout.tmpl")
+		ts, err = ts.ParseFS(assets.Files, "html/*.layout.tmpl")
 		if err != nil {
 			return nil, err
 		}
