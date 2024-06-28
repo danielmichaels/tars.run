@@ -4,9 +4,10 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-bin = "./tmp/shorty"
+bin = "./tmp/shorty serve"
 #cmd = "go build -o ./tmp/shorty ./cmd/api"
-cmd = "go build -o ./tmp/shorty ./cmd/web"
+#cmd = "go build -o ./tmp/shorty ./cmd/web"
+cmd = "go build -o ./tmp/shorty ./cmd/app"
 delay = 1000
 exclude_dir = ["assets", "tmp", "vendor", "bin", "data", "node_modules"]
 exclude_file = []

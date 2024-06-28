@@ -14,6 +14,10 @@ tasks:
     desc: Run hot-loading dev server
     cmds:
       - air
+  web:
+    desc: Run hot-loading dev server
+    cmds:
+      - air
   db:migration:up:
     desc: Run migrations (all of them)
     cmds:
