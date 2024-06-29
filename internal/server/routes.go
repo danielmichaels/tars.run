@@ -3,6 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
+	"github.com/danielmichaels/shortlink-go/assets/view/pages"
+	"github.com/danielmichaels/shortlink-go/internal/templates"
 	"net/http"
 	"time"
 
@@ -44,8 +46,19 @@ func (app *Application) routes() http.Handler {
 	r.Get("/{hash}/analytics", app.handleLinkAnalytics())
 
 	r.Post("/v1/links", app.handleCreateLink())
+
+	// New Routes
+	r.Get("/n", app.handleHome)
 	return r
 }
+
+func (app *Application) handleHome(w http.ResponseWriter, r *http.Request) {
+	err := templates.Render(r.Context(), w, 200, pages.Home())
+	if err != nil {
+		return
+	}
+}
+
 func (app *Application) notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
 	_, _ = w.Write([]byte("404 Not Found"))

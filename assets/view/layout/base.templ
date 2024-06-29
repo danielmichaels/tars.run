@@ -1,0 +1,44 @@
+package layout
+
+import (
+	"fmt"
+	"github.com/danielmichaels/shortlink-go/internal/config"
+	"github.com/danielmichaels/shortlink-go/internal/version"
+)
+
+var (
+	theme        = fmt.Sprintf("/static/css/theme.css?version=%s", version.Get())
+	bundle       = fmt.Sprintf("/static/js/bundle.js?version=%s", version.Get())
+	localStorage = fmt.Sprintf("/static/js/local-storage.js?version=%s", version.Get())
+	htmx         = fmt.Sprintf("/static/js/htmx.min.js?version=%s", version.Get())
+	plausible    = config.AppConfig().Names.PlausibleAccount
+	title        = config.AppConfig().Names.AppName
+)
+
+templ PlausibleScript(domain string) {
+	<script defer data-domain={ domain } src="https://plausible.io/js/plausible.js"></script>
+}
+
+templ Base() {
+	<html lang="en" class="h-full bg-gray-100">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="stylesheet" href={ theme }/>
+			<script src={ theme } defer></script>
+			<script src={ bundle } defer></script>
+			<script src={ localStorage } defer></script>
+			<script src={ htmx } defer></script>
+			<link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico"/>
+			if plausible != "" {
+				@PlausibleScript(plausible)
+			}
+			<title>{ title }</title>
+		</head>
+		<body hx-boost="true">
+			<main class="container mx-auto">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
