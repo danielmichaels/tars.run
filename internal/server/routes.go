@@ -1,29 +1,41 @@
-package main
+package server
 
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/danielmichaels/shortlink-go/assets"
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	"github.com/danielmichaels/shortlink-go/internal/validator"
-	"github.com/danielmichaels/shortlink-go/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog"
 	"github.com/tomasen/realip"
-	"net/http"
-	"time"
 )
 
-func (app *application) routes() http.Handler {
+func (app *Application) routes() http.Handler {
 	r := chi.NewRouter()
-	// Middleware
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.URLFormat)
 	r.Use(middleware.RealIP)
-	r.Use(httplog.RequestLogger(app.logger))
-	r.Use(app.recoverPanic)
+	r.Use(middleware.Compress(5))
+	r.Use(httplog.RequestLogger(app.Logger, []string{
+		"/healthz",
+		"/static/img/logo.png",
+		"/static/icons/favicon.ico",
+		"/static/css/theme.css",
+		"/static/js/bundle.js",
+		"/static/js/local-storage.js",
+		"/static/js/htmx.min.js",
+	}))
+	r.Use(middleware.Heartbeat("/healthz"))
+
 	r.NotFound(app.notFound)
 	r.MethodNotAllowed(app.methodNotAllowed)
-	// fileServer for static assets
-	fileServer := http.FileServer(neuteredFileSystem{http.FS(ui.Files)})
+
+	fileServer := http.FileServer(http.FS(assets.Files))
 	r.Handle("/static/*", fileServer)
 
 	// Routes
@@ -32,19 +44,18 @@ func (app *application) routes() http.Handler {
 	r.Get("/{hash}/analytics", app.handleLinkAnalytics())
 
 	r.Post("/v1/links", app.handleCreateLink())
-
 	return r
 }
-func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
+func (app *Application) notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
-	w.Write([]byte("404 Not Found"))
+	_, _ = w.Write([]byte("404 Not Found"))
 
 }
-func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+func (app *Application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(405)
-	w.Write([]byte("Method Not Allowed"))
+	_, _ = w.Write([]byte("Method Not Allowed"))
 }
-func (app *application) handleHomepage() http.HandlerFunc {
+func (app *Application) handleHomepage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		app.render(w, r, "home.page.tmpl", &templateData{
 			Title: "Home",
@@ -52,7 +63,7 @@ func (app *application) handleHomepage() http.HandlerFunc {
 	}
 }
 
-func (app *application) handleCreateLink() http.HandlerFunc {
+func (app *Application) handleCreateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
 			Link string `json:"link"`
@@ -77,7 +88,7 @@ func (app *application) handleCreateLink() http.HandlerFunc {
 		}
 
 		time.Sleep(1 * time.Second)
-		err = app.models.Links.Insert(link)
+		err = app.Models.Links.Insert(link)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
@@ -85,7 +96,12 @@ func (app *application) handleCreateLink() http.HandlerFunc {
 		headers := make(http.Header)
 		headers.Set("Location", fmt.Sprintf("/v1/links/%s", link.Hash))
 
-		err = app.writeJSON(w, http.StatusCreated, envelope{"link": link, "short_url": link.CreateShortLink()}, headers)
+		err = app.writeJSON(
+			w,
+			http.StatusCreated,
+			M{"link": link, "short_url": link.CreateShortLink()},
+			headers,
+		)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
@@ -93,11 +109,11 @@ func (app *application) handleCreateLink() http.HandlerFunc {
 	}
 }
 
-func (app *application) handleRedirectLink() http.HandlerFunc {
+func (app *Application) handleRedirectLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := chi.URLParam(r, "hash")
 
-		link, err := app.models.Links.Get(hash)
+		link, err := app.Models.Links.Get(hash)
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
@@ -117,20 +133,20 @@ func (app *application) handleRedirectLink() http.HandlerFunc {
 		}
 
 		// this constitutes a query on the link, so we save this to the Analytics table.
-		err = app.models.Analytics.Insert(&analytic)
+		err = app.Models.Analytics.Insert(&analytic)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
 		}
-		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+		app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
 		// Use a temporary redirect status in case we want to support changing
 		// redirect targets in the future.
 		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
-		app.logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+		app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
 	}
 }
 
-func (app *application) handleLinkAnalytics() http.HandlerFunc {
+func (app *Application) handleLinkAnalytics() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := chi.URLParam(r, "hash")
 		var input struct {
@@ -144,14 +160,23 @@ func (app *application) handleLinkAnalytics() http.HandlerFunc {
 		input.Filters.Page = validator.ReadInt(qs, "page", 1, v)
 		input.Filters.PageSize = validator.ReadInt(qs, "page_size", 20, v)
 		input.Filters.Sort = validator.ReadString(qs, "sort", "date_accessed")
-		input.Filters.SortSafeList = []string{"id", "date_accessed", "user_agent", "ip", "-id", "-date_accessed", "-user_agent", "-ip"}
+		input.Filters.SortSafeList = []string{
+			"id",
+			"date_accessed",
+			"user_agent",
+			"ip",
+			"-id",
+			"-date_accessed",
+			"-user_agent",
+			"-ip",
+		}
 
 		if data.ValidateFilters(v, input.Filters); !v.Valid() {
 			app.failedValidationResponse(w, r, v.Errors)
 			return
 		}
 
-		analytics, metadata, err := app.models.Analytics.GetAllForLink(hash, input.Filters)
+		analytics, metadata, err := app.Models.Analytics.GetAllForLink(hash, input.Filters)
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
@@ -161,13 +186,12 @@ func (app *application) handleLinkAnalytics() http.HandlerFunc {
 			}
 			return
 		}
-		link, err := app.models.Links.Get(hash)
+		link, err := app.Models.Links.Get(hash)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
 		}
 
-		app.logger.Info().Msgf("%#v", analytics)
 		app.render(w, r, "analytics.page.tmpl", &templateData{
 			Title:     "Analytics",
 			Link:      link,

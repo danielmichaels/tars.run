@@ -9,12 +9,12 @@ import (
 
 // Analytics belongs to Link,
 type Analytics struct {
-	ID        uint   `json:"id"`
-	LinkID    uint64 `json:"-"`
-	Ip        string `json:"ip_address"`
-	UserAgent string `json:"user_agent"`
 	//Location     string    `json:"location"` todo: add topo location data from IP
 	DateAccessed time.Time `json:"date_accessed"`
+	Ip           string    `json:"ip_address"`
+	UserAgent    string    `json:"user_agent"`
+	ID           uint      `json:"id"`
+	LinkID       uint64    `json:"-"`
 }
 
 type AnalyticsModel struct {
@@ -39,7 +39,10 @@ func (m AnalyticsModel) Insert(analytics *Analytics) error {
 	)
 }
 
-func (m AnalyticsModel) GetAllForLink(hash string, filters Filters) ([]*Analytics, Metadata, error) {
+func (m AnalyticsModel) GetAllForLink(
+	hash string,
+	filters Filters,
+) ([]*Analytics, Metadata, error) {
 	query := fmt.Sprintf(`
 		SELECT count(*) over(), analytics.id, analytics.date_accessed, analytics.ip, analytics.user_agent
 		FROM analytics

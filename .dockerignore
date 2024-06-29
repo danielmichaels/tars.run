@@ -5,3 +5,6 @@
 README.md
 .dockerignore
 .gitignore
+.env
+node_modules
+.git

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+CMD="/usr/bin/app serve"
+
+is_litestream_enabled() {
+  set +ux
+
+  local IS_ENABLED='false'
+
+  if [[ -n "${LITESTREAM_BUCKET}" ]]; then
+    IS_ENABLED='true';
+  fi
+
+  set -ux
+
+  echo "${IS_ENABLED}"
+}
+
+IS_LITESTREAM_ENABLED="$(is_litestream_enabled)"
+readonly IS_LITESTREAM_ENABLED
+
+if [[ "${IS_LITESTREAM_ENABLED}" == 'true' ]]; then
+  litestream version
+  echo "LITESTREAM_BUCKET=${LITESTREAM_BUCKET}"
+  echo "LITESTREAM_ENDPOINT=${LITESTREAM_ENDPOINT}"
+  echo "LITESTREAM_RETENTION=${LITESTREAM_RETENTION}"
+
+  if [[ -f "$DB_PATH" ]]; then
+    echo "Existing database is $(stat -c %s "${DB_PATH}") bytes"
+  else
+    echo "No existing database found"
+    # Restore database from remote storage.
+    litestream restore -if-replica-exists "${DB_PATH}"
+  fi
+  goose -dir /app/migrations sqlite "$DB_PATH" up
+  # Let Litestream start the server as a child process
+  exec litestream replicate -exec "$CMD"
+else
+  echo "Starting without litestream"
+  goose -dir /app/migrations sqlite "$DB_PATH" up
+  eval "exec $CMD"
+fi

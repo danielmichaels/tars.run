@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bytes"
@@ -10,9 +10,14 @@ import (
 	"strings"
 )
 
-type envelope map[string]interface{}
+type M map[string]interface{}
 
-func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
+func (app *Application) writeJSON(
+	w http.ResponseWriter,
+	status int,
+	data M,
+	headers http.Header,
+) error {
 	js, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -29,7 +34,7 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 	return nil
 }
 
-func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func (app *Application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
@@ -44,14 +49,23 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 
 		switch {
 		case errors.As(err, &syntaxError):
-			return fmt.Errorf("body contains badly-formed JSON (at character %d)", syntaxError.Offset)
+			return fmt.Errorf(
+				"body contains badly-formed JSON (at character %d)",
+				syntaxError.Offset,
+			)
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			return errors.New("body contains badly-formed JSON")
 		case errors.As(err, &unmarshallTypeError):
 			if unmarshallTypeError.Field != "" {
-				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshallTypeError.Field)
+				return fmt.Errorf(
+					"body contains incorrect JSON type for field %q",
+					unmarshallTypeError.Field,
+				)
 			}
-			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshallTypeError.Offset)
+			return fmt.Errorf(
+				"body contains incorrect JSON type (at character %d)",
+				unmarshallTypeError.Offset,
+			)
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
@@ -75,21 +89,26 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 
 // addDefaultData is a helper which will pre-fill the templateData struct with
 // default information that is used across several templates.
-func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+func (app *Application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}
-	td.AppUrl = app.config.Server.FrontendDomain
-	td.Names.AppName = app.config.Names.AppName
-	td.Names.Twitter = app.config.Names.TwitterAccount
-	td.Names.Github = app.config.Names.GithubAccount
-	td.Names.Plausible = app.config.Names.PlausibleAccount
+	td.AppUrl = app.Config.Server.Domain
+	td.Names.AppName = app.Config.Names.AppName
+	td.Names.Twitter = app.Config.Names.TwitterAccount
+	td.Names.Github = app.Config.Names.GithubAccount
+	td.Names.Plausible = app.Config.Names.PlausibleAccount
 	return td
 }
 
 // render is a template rendering helper. It uses a template cache to speed up delivery of templates
-func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
-	ts, ok := app.template[name]
+func (app *Application) render(
+	w http.ResponseWriter,
+	r *http.Request,
+	name string,
+	td *templateData,
+) {
+	ts, ok := app.Template[name]
 	if !ok {
 		http.Error(w, "Template does not exist", 500)
 		return
@@ -100,5 +119,5 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	buf.WriteTo(w)
+	_, _ = buf.WriteTo(w)
 }

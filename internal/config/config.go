@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/joeshaw/envdecode"
 	"log"
 	"time"
+
+	"github.com/joeshaw/envdecode"
 )
 
 type limiter struct {
@@ -13,19 +14,17 @@ type limiter struct {
 }
 
 type Conf struct {
-	Debug   bool `env:"DEBUG,default=false"`
-	Server  serverConf
-	Db      dbConf
-	Limiter limiter
 	Names   names
+	Db      dbConf
+	Server  serverConf
+	Limiter limiter
 }
 
 type dbConf struct {
-	DbName string `env:"DB_NAME,default=./data/shorty.db"`
+	DbName string `env:"DB_NAME,default=./data/data.db"`
 }
 
 type names struct {
-	// Application Name
 	AppName          string `env:"APP_NAME,default=Tars.Run"`
 	TwitterAccount   string `env:"TWITTER_ACCOUNT,default=#"`
 	GithubAccount    string `env:"GITHUB_ACCOUNT,default=#"`
@@ -33,17 +32,14 @@ type names struct {
 }
 
 type serverConf struct {
-	Port           int           `env:"SERVER_PORT,default=1987"`
-	TimeoutRead    time.Duration `env:"SERVER_TIMEOUT_READ,default=5s"`
-	TimeoutWrite   time.Duration `env:"SERVER_TIMEOUT_WRITE,default=10s"`
-	TimeoutIdle    time.Duration `env:"SERVER_TIMEOUT_IDLE,default=120s"`
-	ApiDomain      string        `env:"API_DOMAIN,default=http://localhost:1987"`      // server's domain
-	FrontendDomain string        `env:"FRONTEND_DOMAIN,default=http://localhost:1988"` // server's domain
-	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
-	// Logging
-	LogLevel   string `env:"LOG_LEVEL,default=info"`
-	LogConcise bool   `env:"LOG_CONCISE,default=true"`
-	LogJson    bool   `env:"LOG_JSON,default=false"`
+	Domain       string        `env:"DOMAIN,default=http://localhost:1987"`
+	LogLevel     string        `env:"LOG_LEVEL,default=info"`
+	Port         int           `env:"SERVER_PORT,default=1987"`
+	TimeoutRead  time.Duration `env:"SERVER_TIMEOUT_READ,default=5s"`
+	TimeoutWrite time.Duration `env:"SERVER_TIMEOUT_WRITE,default=10s"`
+	TimeoutIdle  time.Duration `env:"SERVER_TIMEOUT_IDLE,default=120s"`
+	LogConcise   bool          `env:"LOG_CONCISE,default=true"`
+	LogJson      bool          `env:"LOG_JSON,default=false"`
 }
 
 // AppConfig Setup and install the applications' configuration environment variables

@@ -1,16 +1,17 @@
 package data
 
 import (
-	"github.com/danielmichaels/shortlink-go/internal/validator"
 	"math"
 	"strings"
+
+	"github.com/danielmichaels/shortlink-go/internal/validator"
 )
 
 type Filters struct {
-	Page         int
-	PageSize     int
 	Sort         string
 	SortSafeList []string
+	Page         int
+	PageSize     int
 }
 
 // sortDirection sets a column as either ASC or DESC
