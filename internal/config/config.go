@@ -18,15 +18,13 @@ type Conf struct {
 	Db      dbConf
 	Server  serverConf
 	Limiter limiter
-	Debug   bool `env:"DEBUG,default=false"`
 }
 
 type dbConf struct {
-	DbName string `env:"DB_NAME,default=./data/shorty.db"`
+	DbName string `env:"DB_NAME,default=./data/data.db"`
 }
 
 type names struct {
-	// Application Name
 	AppName          string `env:"APP_NAME,default=Tars.Run"`
 	TwitterAccount   string `env:"TWITTER_ACCOUNT,default=#"`
 	GithubAccount    string `env:"GITHUB_ACCOUNT,default=#"`
@@ -34,9 +32,6 @@ type names struct {
 }
 
 type serverConf struct {
-	ApiDomain      string `env:"API_DOMAIN,default=http://localhost:1987"`      // server's domain
-	FrontendDomain string `env:"FRONTEND_DOMAIN,default=http://localhost:1988"` // server's domain
-	// Logging
 	LogLevel       string        `env:"LOG_LEVEL,default=info"`
 	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
 	Port           int           `env:"SERVER_PORT,default=1987"`
