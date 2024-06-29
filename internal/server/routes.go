@@ -24,8 +24,10 @@ func (app *Application) routes() http.Handler {
 	r.Use(httplog.RequestLogger(app.Logger, []string{
 		"/healthz",
 		"/static/img/logo.png",
+		"/static/icons/favicon.ico",
 		"/static/css/theme.css",
 		"/static/js/bundle.js",
+		"/static/js/local-storage.js",
 		"/static/js/htmx.min.js",
 	}))
 	r.Use(middleware.Heartbeat("/healthz"))
@@ -46,12 +48,12 @@ func (app *Application) routes() http.Handler {
 }
 func (app *Application) notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
-	w.Write([]byte("404 Not Found"))
+	_, _ = w.Write([]byte("404 Not Found"))
 
 }
 func (app *Application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(405)
-	w.Write([]byte("Method Not Allowed"))
+	_, _ = w.Write([]byte("Method Not Allowed"))
 }
 func (app *Application) handleHomepage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +192,6 @@ func (app *Application) handleLinkAnalytics() http.HandlerFunc {
 			return
 		}
 
-		app.Logger.Info().Msgf("%#v", analytics)
 		app.render(w, r, "analytics.page.tmpl", &templateData{
 			Title:     "Analytics",
 			Link:      link,

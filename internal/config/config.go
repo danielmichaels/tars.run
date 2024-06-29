@@ -32,14 +32,14 @@ type names struct {
 }
 
 type serverConf struct {
-	LogLevel       string        `env:"LOG_LEVEL,default=info"`
-	AllowedOrigins []string      `env:"ALLOWED_ORIGINS,default=http://localhost:1988"` // server's domain
-	Port           int           `env:"SERVER_PORT,default=1987"`
-	TimeoutRead    time.Duration `env:"SERVER_TIMEOUT_READ,default=5s"`
-	TimeoutWrite   time.Duration `env:"SERVER_TIMEOUT_WRITE,default=10s"`
-	TimeoutIdle    time.Duration `env:"SERVER_TIMEOUT_IDLE,default=120s"`
-	LogConcise     bool          `env:"LOG_CONCISE,default=true"`
-	LogJson        bool          `env:"LOG_JSON,default=false"`
+	Domain       string        `env:"DOMAIN,default=http://localhost:1987"`
+	LogLevel     string        `env:"LOG_LEVEL,default=info"`
+	Port         int           `env:"SERVER_PORT,default=1987"`
+	TimeoutRead  time.Duration `env:"SERVER_TIMEOUT_READ,default=5s"`
+	TimeoutWrite time.Duration `env:"SERVER_TIMEOUT_WRITE,default=10s"`
+	TimeoutIdle  time.Duration `env:"SERVER_TIMEOUT_IDLE,default=120s"`
+	LogConcise   bool          `env:"LOG_CONCISE,default=true"`
+	LogJson      bool          `env:"LOG_JSON,default=false"`
 }
 
 // AppConfig Setup and install the applications' configuration environment variables
