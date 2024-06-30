@@ -4,12 +4,12 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-bin = "./tmp/shorty serve"
-cmd = "go build -o ./tmp/shorty ./cmd/app"
+bin = "./tmp/app serve"
+cmd = "templ generate && go build -o ./tmp/app ./cmd/app"
 delay = 1000
 exclude_dir = ["tmp", "vendor", "bin", "data", "node_modules"]
 exclude_file = []
-exclude_regex = []
+exclude_regex = [".*_templ.go"]
 exclude_unchanged = false
 follow_symlink = false
 full_bin = ""
