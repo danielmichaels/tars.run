@@ -217,6 +217,7 @@ templ LinksSection() {
 
 templ SubmitFormScript() {
 	<script>
+	// todo: remove and use HTMX
       const FORM_URL = "{{ .AppUrl }}/v1/links"
       function shortenForm() {
           return {
