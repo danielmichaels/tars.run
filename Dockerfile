@@ -48,7 +48,7 @@ COPY --from=toolkit ["/usr/local/bin/task", "/usr/local/bin/task"]
 
 COPY . .
 
-#RUN ["task", "templgen"]
+RUN ["task", "templgen"]
 
 RUN apt-get install git -y &&\
     go build  \
