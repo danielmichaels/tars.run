@@ -3,11 +3,12 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/danielmichaels/shortlink-go/assets/view/pages"
-	"github.com/danielmichaels/shortlink-go/internal/templates"
 	"net/http"
 	"slices"
 	"time"
+
+	"github.com/danielmichaels/shortlink-go/assets/view/pages"
+	"github.com/danielmichaels/shortlink-go/internal/templates"
 
 	"github.com/danielmichaels/shortlink-go/assets"
 	"github.com/danielmichaels/shortlink-go/internal/data"
