@@ -5,7 +5,9 @@ import (
 	"github.com/danielmichaels/shortlink-go/internal/config"
 )
 
-var title = config.AppConfig().Names.AppName
+var (
+	title  = config.AppConfig().Names.AppName
+)
 
 templ Home() {
 	@layout.Base() {
@@ -217,9 +219,8 @@ templ LinksSection() {
 
 templ SubmitFormScript() {
 	<script>
-	// todo: remove and use HTMX
-      const FORM_URL = "{{ .AppUrl }}/v1/links"
       function shortenForm() {
+          const formURL = window.location.origin
           return {
               formData: {
                   link: ""
@@ -234,7 +235,7 @@ templ SubmitFormScript() {
                   this.formLoading = false;
                   this.buttonText = "Submitting..."
                   this.formError = false
-                  fetch(FORM_URL, {
+                  fetch(formURL + "/v1/links", {
                       method: "POST",
                       headers: {
                           "Content-Type": "application/json",
@@ -249,7 +250,7 @@ templ SubmitFormScript() {
                       throw new Error("error")
                   })
                   .then((resp) => {
-                      console.log(resp)
+                      console.debug(resp)
                       this.formData.link = "";
                       this.formMessage = "Link successfully saved"
                       appendLocalStorageHashes(resp)
