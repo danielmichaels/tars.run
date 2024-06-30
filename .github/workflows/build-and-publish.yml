@@ -3,6 +3,8 @@ name: functions build and publish
 on:
   workflow_dispatch:
   push:
+    tags:
+      - "*"
     branches: [ "main" ]
   pull_request:
     branches:

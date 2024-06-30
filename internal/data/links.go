@@ -26,7 +26,7 @@ type Link struct {
 // it is created on the fly so that if the underlying domain changes the links
 // are not broken in the future.
 func (l *Link) CreateShortLink() string {
-	return fmt.Sprintf("%s/%s", os.Getenv("FRONTEND_DOMAIN"), l.Hash)
+	return fmt.Sprintf("%s/%s", os.Getenv("DOMAIN"), l.Hash)
 }
 
 type LinkModel struct {
