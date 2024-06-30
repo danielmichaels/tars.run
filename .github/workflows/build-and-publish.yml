@@ -23,22 +23,18 @@ jobs:
       # remove me after testing
       - name: Get TAG
         id: git_tag
-        run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: echo "GIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Check Tag Output
-        env:
-          TAG: ${{steps.git_tag.outputs.TAG}}
         run: |
-          echo "TAG=$TAG"
-          echo "Output=${{steps.git_tag.outputs.TAG}}"
+          echo "${{env.GIT_TAG}}"
+          echo "Output=${{steps.git_tag.outputs.GIT_TAG}}"
 
       - name: Get TAG
         id: get_tag
         run: echo TAG=${{ github.sha }} >> $GITHUB_ENV
       - name: Check Tag Output
-        env:
-          TAG: ${{steps.get_tag.outputs.TAG}}
         run: |
-          echo "TAG=$TAG"
+          echo "${{env.TAG}}"
           echo "Output=${{steps.get_tag.outputs.TAG}}"
       - name: Login to Docker Hub
         uses: docker/login-action@master
@@ -136,10 +132,8 @@ jobs:
         id: git_tag
         run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Check Tag Output
-        env:
-          TAG: ${{steps.git_tag.outputs.TAG}}
         run: |
-          echo "TAG=$TAG"
+          echo "TAG=${{env.TAG}}"
           echo "Output=${{steps.git_tag.outputs.TAG}}"
       - name: Login to Docker Hub
         uses: docker/login-action@master
