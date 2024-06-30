@@ -18,27 +18,10 @@ import (
 )
 
 type Application struct {
-	Config *config.Conf
-	Logger zerolog.Logger
-	//DB     *store.Queries
+	Config   *config.Conf
+	Logger   zerolog.Logger
 	Models   data.Models
 	Template map[string]*template.Template
-}
-
-type templateData struct {
-	Title     string
-	AppUrl    string
-	Names     userTemplateData
-	Link      *data.Link
-	Analytics []*data.Analytics
-	Metadata  data.Metadata
-}
-
-type userTemplateData struct {
-	AppName   string
-	Github    string
-	Twitter   string
-	Plausible string
 }
 
 func (app *Application) Serve(ctx context.Context) error {
