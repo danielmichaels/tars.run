@@ -26,8 +26,7 @@ jobs:
         run: echo "GIT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_ENV
       - name: Check Tag Output
         run: |
-          echo "${{env.GIT_TAG}}"
-          echo "Output=${{steps.git_tag.outputs.GIT_TAG}}"
+          echo "GIT_TAG=${{env.GIT_TAG}}"
 
       - name: Get TAG
         id: get_tag
@@ -35,7 +34,6 @@ jobs:
       - name: Check Tag Output
         run: |
           echo "${{env.TAG}}"
-          echo "Output=${{steps.get_tag.outputs.TAG}}"
       - name: Login to Docker Hub
         uses: docker/login-action@master
         with:
@@ -134,7 +132,6 @@ jobs:
       - name: Check Tag Output
         run: |
           echo "TAG=${{env.TAG}}"
-          echo "Output=${{steps.git_tag.outputs.TAG}}"
       - name: Login to Docker Hub
         uses: docker/login-action@master
         with:
