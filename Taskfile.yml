@@ -85,3 +85,12 @@ tasks:
     desc: run golines . -w
     cmds:
       - golines . -w
+  templgen:
+    desc: run 'templ generate'
+    cmds:
+      - templ fmt .
+      - templ generate
+  templautogen:
+    desc: run 'templ generate' when a .templ file changes
+    cmds:
+      - fd . 'assets/view' | entr task templgen

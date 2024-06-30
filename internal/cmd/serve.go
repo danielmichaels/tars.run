@@ -7,8 +7,6 @@ import (
 	"github.com/danielmichaels/shortlink-go/internal/data"
 	zlog "github.com/danielmichaels/shortlink-go/internal/logger"
 	"github.com/danielmichaels/shortlink-go/internal/server"
-	"github.com/danielmichaels/shortlink-go/internal/store"
-	"github.com/danielmichaels/shortlink-go/internal/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -19,21 +17,16 @@ func ServeCmd(ctx context.Context) *cobra.Command {
 		Short: "Start the web server",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg := config.AppConfig()
-			logger := zlog.NewLogger("tars", cfg)
-			db, err := store.OpenDB(cfg)
+			logger := zlog.NewLogger(cfg.Names.AppName, cfg)
+			db, err := data.OpenDB(cfg)
 			if err != nil {
 				logger.Fatal().Err(err).Msg("failed to open database. exiting")
 			}
 			logger.Info().Msg("database connection established")
-			templateCache, err := templates.NewTemplateCache()
-			if err != nil {
-				logger.Fatal().Err(err).Msg("failed to create a template cache")
-			}
 			app := &server.Application{
-				Config:   cfg,
-				Logger:   logger,
-				Models:   data.NewModels(db),
-				Template: templateCache,
+				Config: cfg,
+				Logger: logger,
+				Models: data.NewModels(db),
 			}
 
 			err = app.Serve(ctx)

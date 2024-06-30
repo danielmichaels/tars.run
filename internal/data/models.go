@@ -5,10 +5,8 @@ import (
 	"errors"
 )
 
-// Model related errors
 var (
 	ErrRecordNotFound = errors.New("record not found")
-	ErrEditConflict   = errors.New("edit conflict")
 )
 
 type LinkStore interface {
@@ -29,12 +27,5 @@ func NewModels(db *sql.DB) Models {
 	return Models{
 		Links:     LinkModel{DB: db},
 		Analytics: AnalyticsModel{DB: db},
-	}
-}
-
-func NewMockModels() Models {
-	return Models{
-		Links:     MockLinksModel{},
-		Analytics: MockAnalyticsModel{},
 	}
 }

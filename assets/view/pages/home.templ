@@ -1,0 +1,279 @@
+package pages
+
+import (
+	"github.com/danielmichaels/shortlink-go/assets/view/layout"
+	"github.com/danielmichaels/shortlink-go/internal/config"
+)
+
+var title = config.AppConfig().Names.AppName
+
+templ Home() {
+	@layout.Base() {
+		@HeaderSection()
+		@ShortenSection()
+		@LinksSection()
+		@LocalStorageLinks()
+		@SubmitFormScript()
+	}
+}
+
+templ HeaderSection() {
+	<section
+		class="flex flex-col items-center justify-center sm:w-full flex-1 lg:px-20 text-center"
+	>
+		<h1 class="text-6xl font-bold pt-5">
+			{ title }
+			<br/>
+			<span class="text-left text-yellow-400 pt-2">⠞⠁⠗⠎</span>
+		</h1>
+		<p class="pt-2">A dead simple, hobbyist, no guarantees URL shortener</p>
+	</section>
+}
+
+templ ShortenSection() {
+	<div class="py-2 flex flex-col justify-center sm:py-12">
+		<div class="relative py-3 sm:w-11/12 max-w-xl sm:mx-auto">
+			<div class="relative bg-gray-50 p-8 bg-white shadow-sm sm:rounded-xl">
+				<form
+					x-data="shortenForm()"
+					@submit.prevent="submitForm"
+					class="space-y-6"
+				>
+					<div>
+						<div class="mt-1">
+							<label for="link"></label>
+							<input
+								id="link"
+								name="link"
+								type="text"
+								placeholder="Shorten link"
+								autoComplete="link"
+								required
+								x-model="formData.link"
+								class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+							/>
+						</div>
+					</div>
+					<div class="pt-0">
+						<div class="flex justify-center items-center">
+							<button
+								:disabled="formLoading"
+								x-text="buttonText"
+								type="submit"
+								class=" justify-center py-2 px-5 w-full lg:w-1/3 md:w-3/4 xl:w-1/2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+							>
+								Shorten
+							</button>
+						</div>
+					</div>
+					<div
+						class="mt-5 text-center"
+						:class="formError &&  'text-red-500'"
+						x-text="formMessage"
+					></div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ LinksSection() {
+	<div class="px-4 sm:px-6 lg:px-8">
+		<div class="sm:flex sm:items-center">
+			<div class="sm:flex-auto">
+				<section class="pb-5">
+					<h2 class="text-2xl font-bold text-center">
+						Previous
+						<span class="text-yellow-400">
+							Links
+						</span>
+					</h2>
+					<div x-data="{ expanded: false }">
+						<p class="text-center pt-2">
+							Links displayed below are kept in
+							<button
+								class="underline decoration-yellow-400 hover:bg-yellow-300 focus:outline-none"
+								@click="expanded = ! expanded"
+							>
+								localstorage
+							</button>
+						</p>
+						<template x-if="true">
+							<p
+								x-show="expanded"
+								x-collapse.duration.500ms
+								class="mt-3 text-center grow h-14"
+							>
+								All links below are stored in localstorage - they can be deleted
+								or lost easily. Links are persistent and can be used even if no
+								longer in your localstorage.
+							</p>
+						</template>
+					</div>
+				</section>
+			</div>
+		</div>
+		<div x-init="hashes = getLinks()">
+			<div class="mt-8 flex flex-col">
+				<div class="-mt-2 mb-5 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+					<div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+						<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+							<table class="min-w-full divide-y divide-gray-300">
+								<thead class="bg-gray-50">
+									<tr>
+										<th
+											scope="col"
+											class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+										>
+											Original URL
+										</th>
+										<th
+											scope="col"
+											class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+										>
+											Short URL
+										</th>
+										<th
+											scope="col"
+											class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+										>
+											Copy Link
+										</th>
+										<th
+											scope="col"
+											class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+										>
+											Analytics
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200 bg-white">
+									<template x-for="hash in hashes.reverse()" :key="hash.hash">
+										<tr>
+											<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+												<span x-text="hash.long_url"></span>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<a
+													class="hover:text-yellow-900"
+													:href="hash.short_url"
+												>
+													<span x-text="hash.short_url"></span>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="h-6 w-6"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+														stroke-width="2"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+														></path>
+													</svg>
+												</a>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<div x-data="{}">
+													<button
+														class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-yellow-500 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+														type="button"
+														@click="$clipboard(() => `${hash.short_url}`)"
+													>
+														<span>Copy </span>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															class="h-5 w-5"
+															viewBox="0 0 20 20"
+															fill="currentColor"
+														>
+															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+															<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+														</svg>
+													</button>
+												</div>
+											</td>
+											<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+												<a
+													:href="`${hash.short_url}/analytics`"
+													class="text-yellow-500 hover:text-yellow-300"
+												>
+													Link
+												</a>
+											</td>
+										</tr>
+									</template>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ SubmitFormScript() {
+	<script>
+	// todo: remove and use HTMX
+      const FORM_URL = "{{ .AppUrl }}/v1/links"
+      function shortenForm() {
+          return {
+              formData: {
+                  link: ""
+              },
+              formMessage: "",
+              formLoading: false,
+              buttonText: "Shorten",
+              formError: false,
+              submitForm() {
+                  console.log(JSON.stringify(this.formData))
+                  this.formMessage = "";
+                  this.formLoading = false;
+                  this.buttonText = "Submitting..."
+                  this.formError = false
+                  fetch(FORM_URL, {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/json",
+                          "Accept": "application/json",
+                      },
+                      body: JSON.stringify(this.formData)
+                  })
+                  .then(resp => {
+                      if (resp.ok) {
+                          return resp.json()
+                      }
+                      throw new Error("error")
+                  })
+                  .then((resp) => {
+                      console.log(resp)
+                      this.formData.link = "";
+                      this.formMessage = "Link successfully saved"
+                      appendLocalStorageHashes(resp)
+                      // less elegant way to force update links table
+                      window.location.reload();
+                  })
+                  .catch(() => {
+                      this.formError = true;
+                      this.formMessage = "Something went wrong";
+                  })
+                  .finally(() => {
+                      this.formLoading = false;
+                      this.buttonText = "Shorten";
+                  })
+              }
+          }
+      }
+  </script>
+}
+
+templ LocalStorageLinks() {
+	<script type="text/javascript">
+        function getLinks() {
+            return JSON.parse(localStorage.getItem("hashes"))
+        }
+    </script>
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,25 +19,7 @@ import (
 type Application struct {
 	Config *config.Conf
 	Logger zerolog.Logger
-	//DB     *store.Queries
-	Models   data.Models
-	Template map[string]*template.Template
-}
-
-type templateData struct {
-	Title     string
-	AppUrl    string
-	Names     userTemplateData
-	Link      *data.Link
-	Analytics []*data.Analytics
-	Metadata  data.Metadata
-}
-
-type userTemplateData struct {
-	AppName   string
-	Github    string
-	Twitter   string
-	Plausible string
+	Models data.Models
 }
 
 func (app *Application) Serve(ctx context.Context) error {

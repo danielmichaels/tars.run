@@ -4,7 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
+
+	"github.com/danielmichaels/shortlink-go/assets/view/pages"
+	"github.com/danielmichaels/shortlink-go/internal/templates"
 
 	"github.com/danielmichaels/shortlink-go/assets"
 	"github.com/danielmichaels/shortlink-go/internal/data"
@@ -38,14 +42,113 @@ func (app *Application) routes() http.Handler {
 	fileServer := http.FileServer(http.FS(assets.Files))
 	r.Handle("/static/*", fileServer)
 
-	// Routes
-	r.Get("/", app.handleHomepage())
-	r.Get("/{hash}", app.handleRedirectLink())
-	r.Get("/{hash}/analytics", app.handleLinkAnalytics())
-
 	r.Post("/v1/links", app.handleCreateLink())
+
+	r.Get("/", app.handleHome)
+	r.Get("/{hash}", app.handleRedirect)
+	r.Get("/{hash}/analytics", app.handleAnalytics)
 	return r
 }
+
+func (app *Application) handleHome(w http.ResponseWriter, r *http.Request) {
+	err := templates.Render(r.Context(), w, 200, pages.Home())
+	if err != nil {
+		return
+	}
+}
+
+func (app *Application) handleRedirect(w http.ResponseWriter, r *http.Request) {
+	hash := chi.URLParam(r, "hash")
+
+	link, err := app.Models.Links.Get(hash)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			// record not found should not display server response which is unhelpful
+			// it instead redirects to the /404.
+			app.notFound(w, r)
+		default:
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	analytic := data.Analytics{
+		Ip:        realip.FromRequest(r),
+		UserAgent: r.UserAgent(),
+		LinkID:    uint64(link.ID),
+	}
+
+	// this constitutes a query on the link, so we save this to the Analytics table.
+	err = app.Models.Analytics.Insert(&analytic)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+	// Use a temporary redirect status in case we want to support changing
+	// redirect targets in the future.
+	http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
+	app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
+}
+func (app *Application) handleAnalytics(w http.ResponseWriter, r *http.Request) {
+	hash := chi.URLParam(r, "hash")
+	var input struct {
+		data.Filters
+	}
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	// Allow ability to paginate response in the future.
+	input.Filters.Page = validator.ReadInt(qs, "page", 1, v)
+	input.Filters.PageSize = validator.ReadInt(qs, "page_size", 20, v)
+	input.Filters.Sort = validator.ReadString(qs, "sort", "date_accessed")
+	input.Filters.SortSafeList = []string{
+		"id",
+		"date_accessed",
+		"user_agent",
+		"ip",
+		"-id",
+		"-date_accessed",
+		"-user_agent",
+		"-ip",
+	}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	analytics, metadata, err := app.Models.Analytics.GetAllForLink(hash, input.Filters)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFound(w, r)
+		default:
+			app.serverError(w, r, err)
+		}
+		return
+	}
+	// Return newest first
+	slices.Reverse(analytics)
+
+	link, err := app.Models.Links.Get(hash)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	fmt.Printf("%v (%T)\n", link.OriginalURL, link.OriginalURL)
+	a := pages.AnalyticsData{
+		Title:     "Analytics",
+		Link:      link,
+		Analytics: analytics,
+		Metadata:  metadata,
+	}
+
+	_ = templates.Render(r.Context(), w, 200, pages.Analytics(a))
+}
+
 func (app *Application) notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
 	_, _ = w.Write([]byte("404 Not Found"))
@@ -54,13 +157,6 @@ func (app *Application) notFound(w http.ResponseWriter, r *http.Request) {
 func (app *Application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(405)
 	_, _ = w.Write([]byte("Method Not Allowed"))
-}
-func (app *Application) handleHomepage() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		app.render(w, r, "home.page.tmpl", &templateData{
-			Title: "Home",
-		})
-	}
 }
 
 func (app *Application) handleCreateLink() http.HandlerFunc {
@@ -106,97 +202,5 @@ func (app *Application) handleCreateLink() http.HandlerFunc {
 			app.serverError(w, r, err)
 			return
 		}
-	}
-}
-
-func (app *Application) handleRedirectLink() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		hash := chi.URLParam(r, "hash")
-
-		link, err := app.Models.Links.Get(hash)
-		if err != nil {
-			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
-				// record not found should not display server response which is unhelpful
-				// it instead redirects to the /404.
-				app.notFound(w, r)
-			default:
-				app.serverError(w, r, err)
-			}
-			return
-		}
-
-		analytic := data.Analytics{
-			Ip:        realip.FromRequest(r),
-			UserAgent: r.UserAgent(),
-			LinkID:    uint64(link.ID),
-		}
-
-		// this constitutes a query on the link, so we save this to the Analytics table.
-		err = app.Models.Analytics.Insert(&analytic)
-		if err != nil {
-			app.serverError(w, r, err)
-			return
-		}
-		app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
-		// Use a temporary redirect status in case we want to support changing
-		// redirect targets in the future.
-		http.Redirect(w, r, link.OriginalURL, http.StatusTemporaryRedirect)
-		app.Logger.Info().Msgf("redirect: %s-%s", link.Hash, link.OriginalURL)
-	}
-}
-
-func (app *Application) handleLinkAnalytics() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		hash := chi.URLParam(r, "hash")
-		var input struct {
-			data.Filters
-		}
-		v := validator.New()
-
-		qs := r.URL.Query()
-
-		// Allow ability to paginate response in the future.
-		input.Filters.Page = validator.ReadInt(qs, "page", 1, v)
-		input.Filters.PageSize = validator.ReadInt(qs, "page_size", 20, v)
-		input.Filters.Sort = validator.ReadString(qs, "sort", "date_accessed")
-		input.Filters.SortSafeList = []string{
-			"id",
-			"date_accessed",
-			"user_agent",
-			"ip",
-			"-id",
-			"-date_accessed",
-			"-user_agent",
-			"-ip",
-		}
-
-		if data.ValidateFilters(v, input.Filters); !v.Valid() {
-			app.failedValidationResponse(w, r, v.Errors)
-			return
-		}
-
-		analytics, metadata, err := app.Models.Analytics.GetAllForLink(hash, input.Filters)
-		if err != nil {
-			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
-				app.notFound(w, r)
-			default:
-				app.serverError(w, r, err)
-			}
-			return
-		}
-		link, err := app.Models.Links.Get(hash)
-		if err != nil {
-			app.serverError(w, r, err)
-			return
-		}
-
-		app.render(w, r, "analytics.page.tmpl", &templateData{
-			Title:     "Analytics",
-			Link:      link,
-			Analytics: analytics,
-			Metadata:  metadata,
-		})
 	}
 }

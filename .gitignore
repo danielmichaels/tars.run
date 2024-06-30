@@ -9,6 +9,8 @@ bin/*
 .idea
 theme.css
 bundle.js
+# _templ.go files are auto generated in dev and during docker build
+*_templ.go
 # ignore databases
 .*.db-litestream
 /data
