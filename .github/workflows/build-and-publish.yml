@@ -19,6 +19,18 @@ jobs:
         uses: docker/setup-qemu-action@master
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
+
+      # remove me after testing
+      - name: Get TAG
+        id: git_tag
+        run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Check Tag Output
+        env:
+          TAG: ${{steps.git_tag.outputs.TAG}}
+        run: |
+          echo "TAG=$TAG"
+          echo "Output=${{steps.git_tag.outputs.TAG}}"
+
       - name: Get TAG
         id: get_tag
         run: echo TAG=${{ github.sha }} >> $GITHUB_ENV
@@ -53,6 +65,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.TAG }}
 
+  # Publish when merging to main as latest and git sha
   docker-push:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: docker-build
@@ -91,8 +104,60 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.TAG }}
-      -
-        # Temp fix
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  # only push when a new git tagged release is available
+  # will publish an image with git tag
+  docker-push-tag:
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+      - name: Get TAG
+        id: git_tag
+        run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Check Tag Output
+        env:
+          TAG: ${{steps.git_tag.outputs.TAG}}
+        run: |
+          echo "TAG=$TAG"
+          echo "Output=${{steps.git_tag.outputs.TAG}}"
+      - name: Login to Docker Hub
+        uses: docker/login-action@master
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Cache Docker layers
+        uses: actions/cache@master
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Push to Registry
+        uses: docker/build-push-action@master
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.TAG }}
+      - # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
         name: Move cache
